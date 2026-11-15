@@ -42,6 +42,7 @@ from calypso import features  # noqa: E402
 from calypso.app import CalypsoApp  # noqa: E402
 from calypso.backend.document import Link  # noqa: E402
 from calypso.backend.history import history  # noqa: E402
+from calypso.i18n import tr  # noqa: E402
 
 BOOK = os.path.join(TMP, "Le chant & la nymphe.pdf")
 samples.make_book(BOOK)
@@ -51,6 +52,9 @@ SECRET = os.path.join(TMP, "secret.pdf")
 samples.make_encrypted(BOOK, SECRET, "sésame")
 NOTES = os.path.join(TMP, "notes.pdf")
 samples.make_book(NOTES, pages=3)
+TOOLS = os.path.join(TMP, "outils", "rapport.pdf")
+os.makedirs(os.path.dirname(TOOLS))
+samples.make_book(TOOLS, pages=4)
 FORM = os.path.join(TMP, "formulaire.pdf")
 samples.make_form(FORM)
 BAD = os.path.join(TMP, "abîmé.pdf")
@@ -574,6 +578,126 @@ def formulaires(win):
     got = {f.name: d2.field_value(f) for f in d2.fields(0) if f.kind not in ("radio",)}
     check(got.get("nom") == "Tof & Calypso" and got.get("accepte") is True and got.get("pays") == ((1,), ""),
           f"formulaire enregistré et relu ({got})")
+    w.close()
+    yield Wait(0.4)
+
+
+def _job_done(w, before):
+    """Attendre la fin d'un outil : plus de fenêtre de progression et un toast posé."""
+    return lambda: len(w._toasts) > before
+
+
+@step
+def outils(win):
+    import calypso.ui.organizer as orgmod
+    import calypso.ui.tools as toolmod
+    import calypso.ui.window as winmod
+    from calypso.backend.document import Document
+    folder = os.path.dirname(TOOLS)
+    w = app.open_path(TOOLS, new_window=True)
+    yield Wait(5, until=lambda: w.document is not None)
+    w._toasts = []
+    w.toast_overlay.add_toast = lambda t: w._toasts.append(t)
+    # pas de vraie boîte « Enregistrer sous » : le nom proposé est pris tel quel
+    for mod in (orgmod, toolmod, winmod):
+        mod.choose_save = lambda _p, _t, initial, cb: cb(initial)
+    check(w.tools_btn.get_visible() and not w.lookup_action("unprotect").get_enabled(),
+          "menu Outils ; « Retirer le mot de passe » grisé (document non protégé)")
+    # filigrane
+    d = toolmod.WatermarkDialog(w)
+    d.text.set_text("BROUILLON")
+    yield Wait(0.6)
+    check(d.preview.get_paintable() is not None, "filigrane : aperçu dessiné")
+    n = len(w._toasts)
+    d._go()
+    yield Wait(10, until=_job_done(w, n))
+    out = os.path.join(folder, "rapport ({0}).pdf".format(tr("filigrane")))
+    check(os.path.exists(out), "filigrane : « rapport (filigrane).pdf » créé")
+    # fusion avec un autre PDF
+    d = toolmod.MergeDialog(w)
+    check(not d.action.get_sensitive(), "fusion : il faut au moins deux documents")
+    d.add_paths([MIXED, BAD])
+    yield Wait(0.4)
+    for x in [x for x in Gtk.Window.list_toplevels() if isinstance(x, Adw.MessageDialog) and x.get_visible()]:
+        x.close()                                   # « Fichiers ignorés » : le PDF abîmé
+    d.rows[0].pages.set_text("1-2")
+    check(d.action.get_sensitive() and len(d.rows) == 2, "fusion : PDF abîmé écarté, 2 documents")
+    n = len(w._toasts)
+    d._go()
+    yield Wait(10, until=_job_done(w, n))
+    out = os.path.join(folder, "rapport ({0}).pdf".format(tr("fusion")))
+    check(os.path.exists(out) and Document.open(out).n_pages == 5, "fusion : 2 + 3 pages")
+    # compression (Ghostscript) : soit un fichier plus léger, soit « Rien à gagner »
+    d = toolmod.CompressDialog(w)
+    n = len(w._toasts)
+    d._go()
+    yield Wait(20, until=lambda: len(w._toasts) > n or any(
+        isinstance(x, Adw.MessageDialog) and x.get_visible() for x in Gtk.Window.list_toplevels()))
+    made = os.path.exists(os.path.join(folder, "rapport ({0}).pdf".format(tr("compressé"))))
+    nothing = [x for x in Gtk.Window.list_toplevels() if isinstance(x, Adw.MessageDialog) and x.get_visible()]
+    check(made or nothing, "compression : fichier plus léger ou « déjà optimisé »")
+    for x in nothing:
+        x.close()
+    # organiser : pivoter, déplacer, supprimer, remplacer, puis Annuler
+    org = orgmod.PageOrganizer(w)
+    org.present()
+    yield Wait(1.5, until=lambda: len(org._thumbs) >= 4)
+    check(len(org._thumbs) >= 4, "organiser : miniatures des pages")
+    org.select([0])
+    org.rotate(90)
+    org.move([3], 0)                      # la page 4 en tête
+    org.select([2])
+    org.delete()
+    check([it[:] for it in org.items] == [[3, 0], [0, 90], [2, 0]], f"organiser : ordre {org.items}")
+    org.apply_in_place()
+    n = len(w._toasts)
+    yield Wait(10, until=lambda: len(w._toasts) > n and w.document is not None and w.document.n_pages == 3)
+    doc = w.document
+    check(doc.n_pages == 3 and doc.size(1) == (842, 595), "document remplacé : 3 pages, la 2e pivotée")
+    if len(w._toasts) > n:
+        w._toasts[-1].emit("button-clicked")          # « Annuler »
+    yield Wait(5, until=lambda: w.document is not None and w.document.n_pages == 4)
+    check(w.document.n_pages == 4, "« Annuler » : l'original revient")
+    # protéger, puis retirer le mot de passe (document remplacé)
+    d = toolmod.ProtectDialog(w)
+    d._generate()
+    pw = d.pw.get_text()
+    bits, _l = __import__("calypso.backend.pdftools", fromlist=["x"]).password_strength(pw)
+    check(len(pw) == 20 and bits > 100 and d.action.get_sensitive(), "mot de passe généré, jauge « très fort »")
+    d.replace.set_active(True)
+    n = len(w._toasts)
+    d._go()
+    yield Wait(10, until=lambda: len(w._toasts) > n and w.document is not None and w.password == pw)
+    check(w.password == pw and w.lookup_action("unprotect").get_enabled(), "document protégé puis relu")
+    try:
+        Document.open(TOOLS)
+        locked = False
+    except Exception:
+        locked = True
+    check(locked, "le fichier demande désormais un mot de passe")
+    toolmod.unprotect(w)
+    yield Wait(0.4)
+    ask = [x for x in Gtk.Window.list_toplevels() if isinstance(x, Adw.MessageDialog) and x.get_visible()]
+    if ask:
+        ask[0].response("replace")
+        ask[0].close()
+    yield Wait(10, until=lambda: w.document is not None and w.password == "")
+    check(w.password == "" and Document.open(TOOLS).n_pages == 4, "mot de passe retiré")
+    # caviarder
+    w.activate_action("win.redact", None)
+    yield Wait(0.3)
+    check(w.redact_bar.get_reveal_child() and w.view.tool == "redact", "caviarder : barre et outil")
+    x, y, bw, bh = w.document.find(0, "Chapitre")[0]
+    w.view.redactions = {0: [(x - 2, y - 2, bw + 200, bh + 4)]}
+    w.view.emit("redactions-changed")
+    check(w.redact_apply.get_sensitive(), "une zone : « Caviarder… » actif")
+    n = len(w._toasts)
+    w._apply_redact()
+    yield Wait(15, until=_job_done(w, n))
+    out = os.path.join(folder, "rapport ({0}).pdf".format(tr("caviardé")))
+    check(os.path.exists(out) and "Chapitre" not in Document.open(out).text(0)[0],
+          "caviardé : le texte de la page 1 n'existe plus")
+    check(not w.redact_bar.get_reveal_child() and w.view.tool == "select", "fin du caviardage")
     w.close()
     yield Wait(0.4)
 

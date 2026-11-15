@@ -357,3 +357,32 @@ def show_in_folder(parent: Gtk.Widget, path: str):
         return
     bus.call("org.freedesktop.FileManager1", "/org/freedesktop/FileManager1", "org.freedesktop.FileManager1",
              "ShowItems", GLib.Variant("(ass)", ([uri], "")), None, Gio.DBusCallFlags.NONE, 5000, None, done)
+
+
+def path_row(title: str, path: str, on_browse: Callable, icon: str = "folder-open-symbolic") -> Adw.EntryRow:
+    """Ligne « chemin » avec bouton Parcourir (repris d'Odysseus)."""
+    from ..i18n import tr
+    row = Adw.EntryRow(title=title, text=shown(path))
+    btn = Gtk.Button(icon_name=icon, valign=Gtk.Align.CENTER, tooltip_text=tr("Parcourir…"), css_classes=["flat"])
+    btn.connect("clicked", lambda *_: on_browse(row))
+    row.add_suffix(btn)
+    return row
+
+
+def dialog_shell(title: str, action_label: str, width: int = 560, height: int = 680, destructive: bool = False):
+    """Fenêtre de dialogue avec barre d'en-tête Annuler / Action et page de préférences (Odysseus)."""
+    from ..i18n import tr
+    dialog = DialogWindow(title=title, content_width=width, content_height=height)
+    tv = Adw.ToolbarView()
+    header = Adw.HeaderBar(show_end_title_buttons=False, show_start_title_buttons=False)
+    cancel = Gtk.Button(label=tr("Annuler"))
+    cancel.connect("clicked", lambda *_: dialog.close())
+    header.pack_start(cancel)
+    action = Gtk.Button(label=action_label, css_classes=["destructive-action" if destructive else "suggested-action"])
+    header.pack_end(action)
+    tv.add_top_bar(header)
+    page = Adw.PreferencesPage()
+    tv.set_content(page)
+    dialog.set_child(tv)
+    dialog.set_default_widget(action)
+    return dialog, page, action

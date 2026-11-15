@@ -11,8 +11,8 @@ Calypso lit les documents PDF comme Papers (même moteur, Poppler), et y ajouter
 d'[Odysseus](https://github.com/ToFpon/Odysseus) : compresser, fusionner, filigrane, extraire /
 supprimer / pivoter / éclater des pages.
 
-> Work in progress — version 0.2 (reading, annotations, forms). / En cours — version 0.2 (lecture,
-> annotations, formulaires).
+> Work in progress — version 0.3 (reading, annotations, forms, PDF tools). / En cours — version 0.3
+> (lecture, annotations, formulaires, outils PDF).
 
 ## Try it / L'essayer
 

@@ -41,3 +41,12 @@ popover.calypso-link-preview > contents {
   padding: 0;
   transition: opacity 150ms;
 }
+
+/* organiser les pages : page choisie (sélection gérée par Calypso, pas par la FlowBox) */
+flowboxchild.calypso-picked {
+  background-color: alpha(@accent_bg_color, 0.25);
+  border-radius: 8px;
+}
+flowboxchild {
+  padding: 6px;
+}

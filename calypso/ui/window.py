@@ -20,7 +20,7 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 from .. import APP_NAME, features  # noqa: E402
 from ..backend.document import Document, OpenError, PasswordNeeded  # noqa: E402
 from ..backend.history import history  # noqa: E402
-from ..i18n import tr  # noqa: E402
+from ..i18n import ntr, tr  # noqa: E402
 from ..settings import settings  # noqa: E402
 from .common import AlertDialog, alert, choose_files, choose_save, open_with_default, shown, \
     show_in_folder, toast  # noqa: E402
@@ -157,6 +157,9 @@ class MainWindow(Adw.ApplicationWindow):
         self.annotate_btn = Gtk.ToggleButton(icon_name="document-edit-symbolic", action_name="win.annotate",
                                              tooltip_text=tr("Annoter"))
         self.header.pack_end(self.annotate_btn)
+        self.tools_btn = Gtk.MenuButton(icon_name="applications-utilities-symbolic", tooltip_text=tr("Outils"),
+                                        menu_model=self._tools_menu())
+        self.header.pack_end(self.tools_btn)
 
         # contenu
         self.stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.CROSSFADE)
@@ -192,6 +195,8 @@ class MainWindow(Adw.ApplicationWindow):
         content.append(self.forms_banner)
         content.append(self.search.bar)
         content.append(self.tools_bar)
+        self.redact_bar = self._redact_bar()
+        content.append(self.redact_bar)
         content.append(self.scroller)
         self.split = Adw.OverlaySplitView(sidebar=self.sidebar, content=content, min_sidebar_width=170,
                                           max_sidebar_width=260, sidebar_width_fraction=0.2,
@@ -233,6 +238,23 @@ class MainWindow(Adw.ApplicationWindow):
         misc.append(tr("Raccourcis clavier"), "win.shortcuts")
         misc.append(tr("À propos de Calypso"), "app.about")
         menu.append_section(None, misc)
+        return menu
+
+    def _tools_menu(self) -> Gio.Menu:
+        menu = Gio.Menu()
+        pages = Gio.Menu()
+        pages.append(tr("Organiser les pages…"), "win.organize")
+        pages.append(tr("Fusionner avec d'autres PDF…"), "win.merge")
+        menu.append_section(None, pages)
+        change = Gio.Menu()
+        change.append(tr("Compresser…"), "win.compress")
+        change.append(tr("Filigrane…"), "win.watermark")
+        change.append(tr("Caviarder…"), "win.redact")
+        menu.append_section(None, change)
+        lock = Gio.Menu()
+        lock.append(tr("Protéger par un mot de passe…"), "win.protect")
+        lock.append(tr("Retirer le mot de passe…"), "win.unprotect")
+        menu.append_section(None, lock)
         return menu
 
     def _zoom_menu(self) -> Gio.Menu:
@@ -290,6 +312,14 @@ class MainWindow(Adw.ApplicationWindow):
                                                 self._sync_tool_buttons()))
         self.add_action(a)
         self._add("markup", lambda kind: self.annotator.markup(kind), "s")
+        from . import tools as tool_ui
+        self._add("organize", lambda: self._with_saved(self._organize))
+        self._add("merge", lambda: self._with_saved(lambda: tool_ui.MergeDialog(self).present()))
+        self._add("compress", lambda: self._with_saved(lambda: tool_ui.CompressDialog(self).present()))
+        self._add("watermark", lambda: self._with_saved(lambda: tool_ui.WatermarkDialog(self).present()))
+        self._add("protect", lambda: self._with_saved(lambda: tool_ui.ProtectDialog(self).present()))
+        self._add("unprotect", lambda: self._with_saved(lambda: tool_ui.unprotect(self)))
+        self._add("redact", lambda: self._with_saved(self._start_redact))
         self._add("edit-annot", lambda: self._ctx_annot() and self.annotator.edit(self._ctx_annot()))
         self._add("delete-annot", lambda: self._ctx_annot() and self.annotator.delete(self._ctx_annot()))
         self._add("show-folder", lambda: self.path and show_in_folder(self, self.path))
@@ -351,7 +381,8 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _sync_actions(self):
         has = self.document is not None
-        for name in ("save-as", "annotate", "show-folder", "reload", "properties", "find", "find-next", "find-previous",
+        for name in ("save-as", "annotate", "organize", "merge", "compress", "watermark", "protect", "redact",
+                     "show-folder", "reload", "properties", "find", "find-next", "find-previous",
                      "select-all", "zoom-in", "zoom-out", "zoom-reset", "zoom-set", "zoom-mode", "rotate-left",
                      "rotate-right", "continuous", "dual", "dual-cover", "night", "first-page", "last-page",
                      "go-page", "sidebar"):
@@ -363,6 +394,8 @@ class MainWindow(Adw.ApplicationWindow):
         self.lookup_action("undo").set_enabled(has and self.annotator.can_undo())
         self.lookup_action("redo").set_enabled(has and self.annotator.can_redo())
         self.annotate_btn.set_visible(has)
+        self.tools_btn.set_visible(has)
+        self.lookup_action("unprotect").set_enabled(has and bool(self.password))
         self.lookup_action("go-back").set_enabled(has and self.view.can_go_back())
         self.lookup_action("go-forward").set_enabled(has and self.view.can_go_forward())
         self.page_box.set_visible(has)
@@ -863,6 +896,123 @@ class MainWindow(Adw.ApplicationWindow):
                 then()
             return False
         threading.Thread(target=work, name="calypso-save", daemon=True).start()
+
+    # -- outils ------------------------------------------------------------------------------------
+    @property
+    def password(self) -> str:
+        return self.document.password if self.document is not None else ""
+
+    def _with_saved(self, then):
+        """Les outils travaillent sur le FICHIER : annotations et champs d'abord enregistrés."""
+        if self.document is None:
+            return
+        if not self.document.dirty:
+            then()
+            return
+        d = AlertDialog(tr("Enregistrer d'abord ?"),
+                        tr("Les outils travaillent sur le fichier : vos annotations et les champs remplis "
+                           "doivent d'abord être enregistrés."))
+        d.add_response("cancel", tr("Annuler"))
+        d.add_response("save", tr("Enregistrer et continuer"))
+        d.set_response_appearance("save", Adw.ResponseAppearance.SUGGESTED)
+        d.set_default_response("save")
+        d.set_close_response("cancel")
+        d.connect("response", lambda _d, r: r == "save" and self.save(then=then))
+        d.present(self)
+
+    def tool_result(self, path: str, detail: str = "", folder: str = ""):
+        """Fichier créé par un outil : toast « Ouvrir »."""
+        if not path:
+            return
+        name = shown(os.path.basename(path))
+        text = tr("« {0} » créé").format(name) + (f" — {detail}" if detail else "")
+        if folder:
+            toast(self, text, tr("Ouvrir le dossier"), lambda: show_in_folder(self, path), timeout=8)
+        else:
+            toast(self, text, tr("Ouvrir"), lambda: self.get_application().open_path(path), timeout=8)
+
+    def reopen_after_tool(self, password: str, message: str, backup: str = ""):
+        """Le document a été remplacé par un outil : relu à la même page ; « Annuler » remet
+        l'original gardé de côté (backup)."""
+        state = self.view.get_state()
+        self.open_document(self.path, password=password or None, state=state)
+        if backup:
+            path, old_pw = self.path, self.password
+
+            def undo():
+                from ..backend.pdftools import replace_into
+                import shutil
+                tmp = os.path.join(os.path.dirname(path), "." + os.path.basename(path) + ".calypso-undo")
+                try:
+                    shutil.copy2(backup, tmp)
+                    replace_into(tmp, path)
+                except OSError as e:
+                    alert(self, tr("Impossible de rétablir l'original"), shown(e.strerror or str(e)))
+                    return
+                self.open_document(path, password=old_pw or None, state=self.view.get_state())
+            toast(self, message, tr("Annuler"), undo, timeout=10)
+        else:
+            toast(self, message)
+
+    def _organize(self):
+        from .organizer import PageOrganizer
+        PageOrganizer(self).present()
+
+    # -- caviardage ---------------------------------------------------------------------------------
+    def _redact_bar(self):
+        bar = Gtk.Box(spacing=8, margin_start=8, margin_end=8, margin_top=4, margin_bottom=4)
+        bar.append(Gtk.Image(icon_name="security-high-symbolic"))
+        self.redact_label = Gtk.Label(xalign=0, hexpand=True, wrap=True)
+        bar.append(self.redact_label)
+        clear = Gtk.Button(label=tr("Tout effacer"))
+        clear.connect("clicked", lambda *_: self.view.clear_redactions())
+        bar.append(clear)
+        done = Gtk.Button(label=tr("Terminer"))
+        done.connect("clicked", lambda *_: self._end_redact())
+        bar.append(done)
+        self.redact_apply = Gtk.Button(label=tr("Caviarder…"), css_classes=["destructive-action"])
+        self.redact_apply.connect("clicked", lambda *_: self._apply_redact())
+        bar.append(self.redact_apply)
+        rev = Gtk.Revealer(child=bar, transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN)
+        rev.add_css_class("toolbar")
+        self.view.connect("redactions-changed", lambda *_: self._sync_redact())
+        return rev
+
+    def _start_redact(self):
+        if self.lookup_action("annotate").get_state().get_boolean():
+            self.activate_action("win.annotate", None)
+        self.redact_bar.set_reveal_child(True)
+        self.view.set_tool("redact")
+        self._sync_redact()
+
+    def _end_redact(self):
+        self.redact_bar.set_reveal_child(False)
+        self.view.clear_redactions()
+        self.view.set_tool("select")
+
+    def _sync_redact(self):
+        n = sum(len(r) for r in self.view.redactions.values())
+        self.redact_label.set_label(
+            tr("Tracez les zones à masquer ; un clic dans une zone la retire.") if not n else
+            ntr("{0} zone à masquer définitivement", "{0} zones à masquer définitivement", n).format(n))
+        self.redact_apply.set_sensitive(n > 0)
+
+    def _apply_redact(self):
+        boxes = {p: list(r) for p, r in self.view.redactions.items() if r}
+        if not boxes:
+            return
+        src, pw = self.path, self.password
+        from ..backend import pdftools
+
+        def chosen(dst):
+            if not dst.lower().endswith(".pdf"):
+                dst += ".pdf"
+            self._end_redact()
+            from .progress import run_job
+            run_job(self, tr("Caviardage"), lambda j: pdftools.redact(j, src, boxes, dst, password=pw),
+                    lambda job: self.tool_result(job.result, tr("pages touchées converties en images")))
+        choose_save(self, tr("Enregistrer le document caviardé"), pdftools.suggest_output(src, tr("caviardé")),
+                    chosen)
 
     def document_changed(self):
         """Annotation ou champ modifié (ou enregistré) : titre, actions, panneau."""

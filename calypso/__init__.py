@@ -2,4 +2,4 @@
 
 APP_ID = "io.github.calypso.Calypso"
 APP_NAME = "Calypso"
-VERSION = "0.2.0"
+VERSION = "0.3.0"

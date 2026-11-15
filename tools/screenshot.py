@@ -144,6 +144,40 @@ def start():
             d.present()
         if args.get("properties"):
             win.show_properties()
+        if args.get("organize"):
+            from calypso.ui.organizer import PageOrganizer
+            org = PageOrganizer(win)
+            org.set_default_size(w, h)
+            org.present()
+            org.select([2, 3])
+            org.items[1][1] = 90
+            org._fill([2, 3])
+
+            def shot_org():
+                paint = Gtk.WidgetPaintable.new(org)
+                snap = Gtk.Snapshot()
+                paint.snapshot(snap, org.get_width(), org.get_height())
+                org.get_renderer().render_texture(snap.to_node(), None).save_to_png(out)
+                print("capture", out)
+                app._quit()
+                return False
+            GLib.timeout_add(delay, shot_org)
+            return False
+        if args.get("watermark"):
+            from calypso.ui.tools import WatermarkDialog
+            d = WatermarkDialog(win)
+            d.present()
+
+            def shot_wm():
+                paint = Gtk.WidgetPaintable.new(d.dialog)
+                snap = Gtk.Snapshot()
+                paint.snapshot(snap, d.dialog.get_width(), d.dialog.get_height())
+                d.dialog.get_renderer().render_texture(snap.to_node(), None).save_to_png(out)
+                print("capture", out)
+                app._quit()
+                return False
+            GLib.timeout_add(delay, shot_wm)
+            return False
         if args.get("annotate"):
             win.activate_action("win.annotate", None)
             an = win.annotator

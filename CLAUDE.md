@@ -36,9 +36,10 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
    (dans le fichier même), Ctrl+Maj+S, question « Enregistrer les modifications ? » à la fermeture.
    Reste pour plus tard : texte libre et dessin à main levée (Poppler 24.02 ne sait pas les CRÉER :
    pas d'AnnotFreeText.new ni d'AnnotInk → pypdf, qui a FreeText / PolyLine).
-3. Outils d'Odysseus (`odysseus/backend/pdf.py` : compresser, fusionner, filigrane, extraire / supprimer /
-   pivoter / éclater des pages) dans un menu « Outils » ; protéger par mot de passe (qpdf) avec le
-   générateur et la jauge de Pressoir ; réorganiser les pages en glissant les miniatures ; caviarder.
+3. Outils — FAIT (0.3.0), menu « Outils » de l'en-tête : organiser les pages (glisser, pivoter, dupliquer,
+   supprimer, extraire, éclater ; « Remplacer le document » avec « Annuler »), fusionner, compresser,
+   filigrane (aperçu), caviarder, protéger par un mot de passe (générateur + jauge de Pressoir), retirer
+   le mot de passe.
 4. Présentation (F5), impression, signatures (vérifier, signer), mode curseur (F7), puis paquet (.deb,
    PPA, site) comme Nausicaa. Plus tard peut-être : DjVu, TIFF, BD (CBZ / CBR) comme Papers.
 
@@ -115,6 +116,22 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
   fsync du dossier ; droits du fichier remplacé gardés ; document chiffré : reste chiffré (Poppler).
   Fait dans un fil ; notre propre écriture ne déclenche pas le rechargement (date notée) ; document
   modifié : jamais rechargé tout seul. Fichier en lecture seule : « Enregistrer sous ».
+
+- Outils (`backend/pdftools.py`, repris d'Odysseus `backend/pdf.py` ; `backend/jobs.py` = Job réduit ;
+  `ui/tools.py`, `ui/organizer.py`, `ui/progress.py`) : travaillent sur le FICHIER → document modifié :
+  « Enregistrer d'abord ? » (`MainWindow._with_saved`). Sortie nouvelle à côté, « nom (compressé).pdf »…,
+  jamais par-dessus un fichier (`place_new` : lien dur puis retrait du nom caché ; repli renommage sans
+  liens durs) ; remplacement voulu par `replace_into` (droits gardés, fsync). Document protégé : copie
+  déchiffrée dans un dossier privé 0700, effacée après (`plain`). Toast « Ouvrir » (`tool_result`) ;
+  document remplacé : relu à la même page (`reopen_after_tool`), « Annuler » remet la copie gardée dans
+  ~/.cache/calypso/undo (organiser). Progression : fenêtre après 0,4 s, « Annuler » tue le programme
+  (groupe de processus). Organiser = UNE commande qpdf (`--pages` dans l'ordre + `--rotate=+N:pages`).
+  Caviarder : pages touchées redessinées en IMAGE (zones peintes en noir) puis remises par qpdf — le texte
+  dessous n'existe plus (testé). Compression plus grosse que l'original : rien n'est produit.
+  Organiseur : sélection gérée par nous (`sel`, clic / Ctrl / Maj, classe `calypso-picked`) — en sélection
+  MULTIPLE, la FlowBox prenait le glisser pour son cadre de sélection (et sans adjustment : CRITICAL
+  gtk_adjustment_get_value) : les miniatures ne partaient jamais. Vrai glisser testé dans ui_mouse (le
+  glisser xdotool tourne dans un FIL : la boucle GTK doit traiter les mouvements au fil de l'eau).
 
 ## Tests
 

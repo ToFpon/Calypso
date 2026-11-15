@@ -40,6 +40,8 @@ PREVIEW_PX = 300_000
 CACHE_BYTES = 320 * 1024 * 1024
 PREVIEWS = 120
 MARKUP_TOOLS = ("highlight", "underline", "strikeout", "squiggly")
+REDACT = Gdk.RGBA()
+REDACT.parse("rgba(0,0,0,0.85)")
 ZOOM_STEPS = (0.25, 0.33, 0.5, 0.67, 0.75, 0.85, 1.0, 1.15, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0, 5.0,
               6.4, 8.0, 10.0, 12.8, 16.0)
 
@@ -81,6 +83,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         "context-menu": (GObject.SignalFlags.RUN_FIRST, None, (float, float, object)),
         "history-changed": (GObject.SignalFlags.RUN_FIRST, None, ()),
         "page-invalidated": (GObject.SignalFlags.RUN_FIRST, None, (int,)),
+        "redactions-changed": (GObject.SignalFlags.RUN_FIRST, None, ()),
     }
     hadjustment = GObject.Property(type=Gtk.Adjustment)
     vadjustment = GObject.Property(type=Gtk.Adjustment)
@@ -144,6 +147,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         self.selected_annot = None               # AnnotInfo
         self.show_fields = True
         self._band = None                        # rectangle en cours de tracé (page, x1, y1, x2, y2)
+        self.redactions: dict = {}               # zones à caviarder : page → [(x, y, l, h)]
         self._editor = None                      # (widget, page, rect) : champ de formulaire en saisie
         self.set_has_tooltip(True)
         self.connect("query-tooltip", self._on_tooltip)
@@ -199,6 +203,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         self.close_editor(commit=False)
         self.selected_annot = None
         self._band = None
+        self.redactions = {}
         self._laid_out = False
         self._anchor = None
         if document is not None:
@@ -892,6 +897,10 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
             sa = self.selected_annot
             if sa is not None and sa.page == i:
                 self._outline(snap, self.page_rect_to_view(i, sa.rect), self._accent(1.0))
+            for r in self.redactions.get(i, ()):
+                vr = self.page_rect_to_view(i, r)
+                snap.append_color(REDACT, _rect(*vr))
+                self._outline(snap, vr, self._accent(1.0))
             if self._band is not None and self._band[0] == i:
                 _p, x1, y1, x2, y2 = self._band
                 r = self.page_rect_to_view(i, (min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1)))
@@ -1007,7 +1016,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
             self.clear_selection()
             self.select_annot(None)
             return
-        if self.tool in ("square", "circle", "note"):
+        if self.tool in ("square", "circle", "note", "redact"):
             return
         if n_press == 2:
             self._set_selection(hit, hit, "word")
@@ -1032,6 +1041,9 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
             return
         if self.tool == "note" and self.annotator is not None:
             self.annotator.add_note(*hit)
+            return
+        if self.tool == "redact":
+            self._remove_redaction(hit)
             return
         if self.tool in ("square", "circle"):
             return
@@ -1066,7 +1078,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         if start is None:
             return
         self._dragging = True
-        if self.tool in ("square", "circle"):
+        if self.tool in ("square", "circle", "redact"):
             page = start[0]
             end = self._hit_in_page(page, x, y)
             self._band = (page, start[1], start[2], end[0], end[1])
@@ -1098,13 +1110,17 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         self._press = None
         if self.annotator is None:
             return
-        if self.tool in ("square", "circle") and self._band is not None:
+        if self.tool in ("square", "circle", "redact") and self._band is not None:
             page, x1, y1, x2, y2 = self._band
             self._band = None
             self.queue_draw()
             rect = (min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
             if rect[2] >= 3 and rect[3] >= 3:
-                self.annotator.add_shape(page, self.tool, rect)
+                if self.tool == "redact":
+                    self.redactions.setdefault(page, []).append(rect)
+                    self.emit("redactions-changed")
+                else:
+                    self.annotator.add_shape(page, self.tool, rect)
         elif self.tool in MARKUP_TOOLS and self._sel is not None:
             self.annotator.markup(self.tool)
 
@@ -1133,7 +1149,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
             doc = self.document
             field = doc.field_at(*hit) if self.annotator is not None and self.tool == "select" else None
             link = doc.link_at(*hit) if field is None else None
-            if self.tool in ("square", "circle", "note"):
+            if self.tool in ("square", "circle", "note", "redact"):
                 cursor = "crosshair"
             elif field is not None and not field.read_only:
                 cursor = "text" if field.kind in ("text", "multiline", "password") else "pointer"
@@ -1301,6 +1317,23 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         if tool in MARKUP_TOOLS and self._sel is not None and self.annotator is not None:
             self.annotator.markup(tool)             # texte déjà sélectionné : annoté tout de suite
         self.queue_draw()
+
+    def _remove_redaction(self, hit):
+        """Mode caviardage : un clic dans une zone la retire."""
+        page, x, y = hit
+        rects = self.redactions.get(page, [])
+        for r in reversed(rects):
+            rx, ry, rw, rh = r
+            if rx <= x <= rx + rw and ry <= y <= ry + rh:
+                rects.remove(r)
+                self.queue_draw()
+                self.emit("redactions-changed")
+                return
+
+    def clear_redactions(self):
+        self.redactions = {}
+        self.queue_draw()
+        self.emit("redactions-changed")
 
     def select_annot(self, info):
         if info is self.selected_annot:

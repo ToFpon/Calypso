@@ -337,6 +337,114 @@ class FormRenderTest(unittest.TestCase):
             shutil.rmtree(tmp, ignore_errors=True)
 
 
+class ToolsTest(unittest.TestCase):
+    """Outils PDF (repris d'Odysseus) sur de vrais fichiers, par qpdf et Ghostscript."""
+
+    def setUp(self):
+        from calypso.backend.jobs import Job
+        self.tmp = tempfile.mkdtemp(prefix="calypso-tools-")
+        self.book = os.path.join(self.tmp, "livre.pdf")
+        samples.make_book(self.book, pages=5)
+        self.job = Job("essai", None)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _texts(self, path, password=None):
+        d = Document.open(path, password)
+        return [d.text(i)[0].split("\n")[0][:12] for i in range(d.n_pages)]
+
+    def test_arrange_order_rotation_delete(self):
+        from calypso.backend import pdftools
+        out = os.path.join(self.tmp, "o.pdf")
+        got = pdftools.arrange(self.job, self.book, [(2, 0), (0, 90), (4, 180)], out)
+        self.assertEqual(got, out)
+        d = Document.open(out)
+        self.assertEqual(d.n_pages, 3)
+        self.assertEqual([d.size(i) for i in range(3)], [(595, 842), (842, 595), (595, 842)])
+        self.assertEqual(self._texts(out)[1], self._texts(self.book)[0])
+        # nouvelle sortie : jamais par-dessus un fichier existant
+        again = pdftools.arrange(self.job, self.book, [(0, 0)], out)
+        self.assertEqual(os.path.basename(again), "o (2).pdf")
+        # remplacement voulu : même nom, droits gardés
+        os.chmod(self.book, 0o640)
+        pdftools.arrange(self.job, self.book, [(1, 0), (0, 0)], self.book, replace=True)
+        self.assertEqual(Document.open(self.book).n_pages, 2)
+        self.assertEqual(os.stat(self.book).st_mode & 0o777, 0o640)
+        self.assertEqual([n for n in os.listdir(self.tmp) if n.startswith(".")], [])
+
+    def test_split_extract(self):
+        from calypso.backend import pdftools
+        folder = os.path.join(self.tmp, "eclate")
+        os.mkdir(folder)
+        out = pdftools.split_pages(self.job, self.book, folder, every=2)
+        self.assertEqual([os.path.basename(p) for p in out], ["livre-1-2.pdf", "livre-3-4.pdf", "livre-5.pdf"])
+        self.assertEqual(Document.open(out[2]).n_pages, 1)
+
+    def test_ranges(self):
+        from calypso.backend.pdftools import parse_ranges, to_qpdf_ranges
+        self.assertEqual(parse_ranges("1-3, 5", 6), [0, 1, 2, 4])
+        self.assertEqual(parse_ranges("", 3), [0, 1, 2])
+        self.assertEqual(parse_ranges("4-", 5), [3, 4])
+        with self.assertRaises(ValueError):
+            parse_ranges("9", 5)
+        self.assertEqual(to_qpdf_ranges([0, 1, 2, 4, 6, 7]), "1-3,5,7-8")
+
+    def test_merge(self):
+        from calypso.backend import pdftools
+        other = os.path.join(self.tmp, "autre.pdf")
+        samples.make_mixed(other)
+        out = pdftools.merge(self.job, [(self.book, "1-2", ""), (other, "", "")], os.path.join(self.tmp, "f.pdf"))
+        self.assertEqual(Document.open(out).n_pages, 5)
+        with self.assertRaises(pdftools.ToolError):
+            pdftools.merge(self.job, [(self.book, "9", "")], os.path.join(self.tmp, "g.pdf"))
+
+    def test_compress(self):
+        from calypso.backend import pdftools
+        r = pdftools.compress(self.job, self.book, os.path.join(self.tmp, "c.pdf"), "/screen")
+        if r.kept_original:
+            self.assertEqual(r.dst, "")                 # déjà optimal : rien produit
+        else:
+            self.assertEqual(Document.open(r.dst).n_pages, 5)
+            self.assertLess(r.after, r.before)
+
+    def test_watermark(self):
+        from calypso.backend import pdftools
+        o = pdftools.WatermarkOptions(text="CONFIDENTIEL", pages="2", angle=0)   # incliné, le texte se lit en désordre
+        out = pdftools.watermark(self.job, self.book, os.path.join(self.tmp, "w.pdf"), o)
+        d = Document.open(out)
+        self.assertIn("CONFIDENTIEL", d.text(1)[0])
+        self.assertNotIn("CONFIDENTIEL", d.text(0)[0])
+
+    def test_protect_unprotect(self):
+        from calypso.backend import pdftools
+        out = pdftools.protect(self.job, self.book, os.path.join(self.tmp, "p.pdf"), "sésame",
+                               allow_copy=False)
+        with self.assertRaises(PasswordNeeded):
+            Document.open(out)
+        self.assertEqual(Document.open(out, "sésame").n_pages, 5)
+        # outils sur un document protégé : copie déchiffrée privée, effacée après
+        o2 = pdftools.arrange(self.job, out, [(0, 0)], os.path.join(self.tmp, "a.pdf"), password="sésame")
+        self.assertEqual(Document.open(o2).n_pages, 1)
+        plain = pdftools.unprotect(self.job, out, os.path.join(self.tmp, "u.pdf"), "sésame")
+        self.assertEqual(Document.open(plain).n_pages, 5)
+        bits, _label = pdftools.password_strength(pdftools.generate_password(20))
+        self.assertGreater(bits, 100)
+
+    def test_redact(self):
+        from calypso.backend import pdftools
+        before = Document.open(self.book)
+        title_box = before.find(0, "Chapitre")[0]
+        x, y, w, h = title_box
+        out = pdftools.redact(self.job, self.book, {0: [(x - 2, y - 2, w + 300, h + 4)]},
+                              os.path.join(self.tmp, "r.pdf"), dpi=100)
+        d = Document.open(out)
+        self.assertEqual(d.n_pages, 5)
+        self.assertEqual(d.text(0)[0].strip(), "")             # page 1 : une image, plus de texte
+        self.assertEqual(d.text(1)[0], before.text(1)[0])      # page 2 intacte
+        self.assertEqual(d.size(0), before.size(0))
+
+
 class HistoryTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="calypso-hist-")

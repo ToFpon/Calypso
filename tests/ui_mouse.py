@@ -291,6 +291,44 @@ def scenario(win):
     yield 0.5
     check(doc.field_value(field("nom")) == "Tof", "texte tapé dans le champ")
     w2._discard_ok = True
+    # -- organiser : glisser la 3e miniature devant la 1re ----------------------------------------
+    from calypso.ui.organizer import PageOrganizer
+    win.document.dirty = False
+    org = PageOrganizer(win)
+    org.present()
+    yield 2.5
+    out = subprocess.run(["xdotool", "search", "--name", "Organiser les pages|Organize Pages|Seiten organisieren"],
+                         capture_output=True, text=True).stdout.split()
+    if out:
+        xdo("windowmove", out[-1], 0, 0)
+        yield 1
+        geo = subprocess.run(["xdotool", "getwindowgeometry", out[-1]], capture_output=True, text=True).stdout
+        pos = geo.split("Position:")[1].split()[0].split(",")
+        org._origin = (int(pos[0]), int(pos[1]))
+    else:
+        org._origin = (0, 0)
+    c0 = org.flow.get_child_at_index(0).get_child()
+    c2 = org.flow.get_child_at_index(2).get_child()
+    a = screen_pos(org, c2, c2.get_width() / 2, c2.get_height() / 3)
+    b = screen_pos(org, c0, 8, c0.get_height() / 3)
+    import threading
+
+    def real_drag():           # dans un fil : la boucle de GTK doit traiter le glisser au fil de l'eau
+        xdo("mousemove", *a)
+        time.sleep(0.2)
+        xdo("mousedown", 1)
+        time.sleep(0.2)
+        for k in range(1, 11):
+            xdo("mousemove", a[0] + (b[0] - a[0]) * k // 10, a[1] + (b[1] - a[1]) * k // 10)
+            time.sleep(0.05)
+        time.sleep(0.3)
+        xdo("mouseup", 1)
+    threading.Thread(target=real_drag, daemon=True).start()
+    yield 2.5
+    check([it[0] for it in org.items[:3]] == [2, 0, 1], f"glisser une miniature : nouvel ordre {org.items[:3]}")
+    org._changed = False
+    org.close()
+    yield 0.4
 
 
 def start(win):
