@@ -74,6 +74,14 @@
   </requires>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.0.2" date="2026-11-15">
+      <description>
+        <ul>
+          <li>A window closed while maximized now reopens maximized</li>
+          <li>The window no longer shrinks by a few pixels each time it is opened</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.1" date="2026-11-15">
       <description>
         <ul>

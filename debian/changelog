@@ -1,3 +1,10 @@
+calypso-pdf (1.0.2~noble1) noble; urgency=medium
+
+  * Une fenêtre fermée maximisée se rouvre maximisée.
+  * La fenêtre ne perd plus quelques pixels de largeur à chaque ouverture.
+
+ -- Tof <nourpon@gmail.com>  Sun, 15 Nov 2026 19:05:29 +0000
+
 calypso-pdf (1.0.1~noble1) noble; urgency=medium
 
   * Paquet renommé « calypso-pdf », et sa commande aussi : Ubuntu et Debian
