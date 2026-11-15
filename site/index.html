@@ -85,12 +85,30 @@
   .card .ico{width:38px;height:38px;border-radius:10px;background:rgba(46,196,182,.12);color:var(--teal-bright);display:grid;place-items:center;margin-bottom:14px;font-family:var(--mono);font-weight:600}
 
   .install{background:linear-gradient(180deg,var(--bg),#0a1b1d)}
-  .term{background:#030a0b;border:1px solid var(--line-strong);border-radius:12px;padding:22px 24px;font-family:var(--mono);font-size:.92rem;position:relative;overflow-x:auto;margin-bottom:20px}
-  .term .p{color:var(--teal)}
-  .copy{position:absolute;top:12px;right:12px;font-family:var(--body);font-size:.8rem;color:var(--text-dim);border:1px solid var(--line-strong);background:var(--surface);padding:5px 12px;border-radius:8px;cursor:pointer}
+  .install .head{text-align:center;max-width:680px;margin:0 auto 44px}
+  .install .head .sub{margin:0 auto}
+  .icard{max-width:760px;margin:0 auto;background:#030a0b;border:1px solid var(--line-strong);border-radius:16px;overflow:hidden;box-shadow:0 24px 60px -24px rgba(0,0,0,.7)}
+  .icard+.icard{margin-top:22px}
+  .itop{position:relative;display:flex;align-items:center;justify-content:center;padding:11px 12px;border-bottom:1px solid var(--line);background:var(--surface-2);font-weight:600;font-size:.84rem}
+  .copy{position:absolute;top:50%;right:10px;transform:translateY(-50%);font-family:var(--mono);font-size:.72rem;cursor:pointer;color:var(--text-dim);background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:5px 10px}
   .copy:hover{color:var(--text);border-color:var(--teal)}
-  .note{color:var(--text-faint);font-size:.9rem}
-  .note code{font-family:var(--mono);color:var(--text-dim)}
+  .cmd{margin:0;padding:18px 22px;font-family:var(--mono);font-size:.86rem;line-height:1.9;color:var(--text);overflow-x:auto;white-space:pre}
+  .cmd .p{color:var(--teal);user-select:none}
+  .cmd .c{color:var(--text-faint)}
+  .ibody{padding:8px 22px;background:var(--surface)}
+  .irow{display:flex;align-items:center;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .irow:last-child{border-bottom:0}
+  .irow .ri{font-size:20px;width:28px;text-align:center}
+  .irow .rt{flex:1;min-width:0}
+  .irow .rt b{display:block;font-weight:600}
+  .irow .rt span{font-size:.86rem;color:var(--text-dim)}
+  .irow a{color:var(--teal-bright)}
+  .irow a:hover{text-decoration:underline}
+  .irow .row-cmd{display:block;width:fit-content;max-width:100%;margin-top:6px;font-family:var(--mono);font-size:.8rem;color:var(--teal-bright);background:rgba(46,196,182,.1);padding:3px 8px;border-radius:6px;white-space:nowrap;overflow-x:auto}
+  .badge{font-family:var(--mono);font-size:.7rem;padding:4px 10px;border-radius:999px;white-space:nowrap;color:var(--green);background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.3)}
+  .reqs{max-width:760px;margin:30px auto 0;font-size:.9rem;color:var(--text-dim);text-align:center}
+  .reqs code{font-family:var(--mono);color:var(--teal-bright);font-size:.84rem}
+  @media (max-width:560px){.irow{flex-wrap:wrap}.irow .rt{flex:1 1 calc(100% - 42px)}.irow .badge{margin-left:42px}}
 
   footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-faint);font-size:.88rem}
   footer .wrap{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
@@ -221,14 +239,27 @@
 
 <section id="install" class="install">
   <div class="wrap">
-    <span class="kicker">Install</span>
-    <h2>Two commands</h2>
-    <p class="sub">Ubuntu 24.04 / 26.04, Zorin OS 18, Linux Mint 22 — updates then come with the system's.</p>
-    <div class="term"><button class="copy" data-copy="sudo add-apt-repository ppa:nourpon/calypso
-sudo apt update && sudo apt install calypso-pdf">Copy</button><span class="p">$</span> sudo add-apt-repository ppa:nourpon/calypso<br><span class="p">$</span> sudo apt update &amp;&amp; sudo apt install calypso-pdf</div>
-    <p class="note">Other Debian-based distributions (Debian 13…): download <code>calypso-pdf_X_all.deb</code> from the
-      <a href="https://github.com/ToFpon/Calypso/releases" style="color:var(--teal)">releases</a>, then
-      <code>sudo apt install ./calypso-pdf_X_all.deb</code>.</p>
+    <div class="head">
+      <span class="kicker">Install</span>
+      <h2>Ready to read.</h2>
+      <p class="sub">Calypso is available for <b>Ubuntu 24.04 “Noble”</b> and <b>26.04 “Resolute”</b> and their derivatives — Zorin OS 18, Linux Mint 22 — from a PPA, under X11 or Wayland. Updates then arrive with the rest of your system.</p>
+    </div>
+    <div class="icard">
+      <div class="itop">Terminal<button class="copy" type="button" title="Copy the two install commands" data-copy="sudo add-apt-repository ppa:nourpon/calypso&#10;sudo apt update &amp;&amp; sudo apt install calypso-pdf">Copy</button></div>
+      <pre class="cmd"><span class="p">$ </span>sudo add-apt-repository ppa:nourpon/calypso
+<span class="p">$ </span>sudo apt update &amp;&amp; sudo apt install calypso-pdf
+<span class="c"># optional: make it your default PDF viewer</span>
+<span class="p">$ </span>xdg-mime default io.github.calypso.Calypso.desktop application/pdf</pre>
+    </div>
+    <div class="icard">
+      <div class="ibody">
+        <div class="irow"><span class="ri">📦</span><div class="rt"><b>Debian package &amp; PPA</b><span>Signed packages, updated through apt · <a href="https://launchpad.net/~nourpon/+archive/ubuntu/calypso">ppa:nourpon/calypso</a></span></div><span class="badge">Available</span></div>
+        <div class="irow"><span class="ri">🧩</span><div class="rt"><b>Other Debian-based distributions</b><span>Debian 13… · download the .deb from <a href="https://github.com/ToFpon/Calypso/releases">GitHub Releases</a> and open it, or in a terminal:<code class="row-cmd">sudo apt install ./calypso-pdf_*_all.deb</code></span></div><span class="badge">Available</span></div>
+        <div class="irow"><span class="ri">💻</span><div class="rt"><b>Source code</b><span>GPL-3.0 · <a href="https://github.com/ToFpon/Calypso">github.com/ToFpon/Calypso</a></span></div><span class="badge">Available</span></div>
+        <div class="irow"><span class="ri">🐞</span><div class="rt"><b>Found a bug? An idea?</b><span><a href="https://github.com/ToFpon/Calypso/issues">Open an issue on GitHub</a></span></div><span class="badge">Welcome</span></div>
+      </div>
+    </div>
+    <p class="reqs">Requirements: Python 3.10+, PyGObject, GTK ≥ 4.14, libadwaita ≥ 1.5, Poppler — all installed by the package. The tools behind the features — <code>qpdf</code>, <code>ghostscript</code>, <code>pypdf</code>, <code>libnss3-tools</code>… — come along with it.</p>
   </div>
 </section>
 
@@ -242,7 +273,7 @@ sudo apt update && sudo apt install calypso-pdf">Copy</button><span class="p">$<
 <script>
   document.querySelectorAll(".copy").forEach(b => b.addEventListener("click", () => {
     navigator.clipboard.writeText(b.dataset.copy).then(() => {
-      const t = b.textContent; b.textContent = "Copied"; setTimeout(() => b.textContent = t, 1600);
+      const t = b.textContent; b.textContent = "Copied ✓"; setTimeout(() => b.textContent = t, 1600);
     });
   }));
 </script>
