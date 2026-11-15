@@ -26,6 +26,7 @@ DEFAULTS: dict[str, Any] = {
     # Fenêtre
     "window_width": 1000,
     "window_height": 760,
+    "window_maximized": False,      # fermée maximisée : rouverte maximisée
     "sidebar_visible": True,
     "sidebar_page": "thumbnails",   # thumbnails, outline
     "features": {},                 # fonctionnalités activées / désactivées (voir features.py)

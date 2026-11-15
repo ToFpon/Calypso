@@ -88,6 +88,8 @@ class MainWindow(Adw.ApplicationWindow):
     def __init__(self, app):
         super().__init__(application=app, title=APP_NAME)
         self.set_default_size(settings["window_width"], settings["window_height"])
+        if settings["window_maximized"]:
+            self.maximize()             # avant l'affichage : ouverte directement maximisée
         self.set_size_request(360, 320)
         self.path: Optional[str] = None
         self.document: Optional[Document] = None
@@ -1234,8 +1236,11 @@ class MainWindow(Adw.ApplicationWindow):
             self._ask_save_before_close()
             return True
         self.save_state()
-        if not self.is_maximized() and not self.is_fullscreen():
-            settings["window_width"], settings["window_height"] = self.get_width(), self.get_height()
+        # taille par défaut = celle d'avant la maximisation / le plein écran (GTK 4) ; get_width()
+        # perdait quelques pixels à chaque ouverture selon le gestionnaire de fenêtres
+        settings["window_width"], settings["window_height"] = self.get_default_size()
+        if self.get_visible():
+            settings["window_maximized"] = self.is_maximized()
         self.teardown()
         return False
 
