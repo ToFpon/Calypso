@@ -61,7 +61,15 @@ class History:
         self.save()
 
     def forget(self, path: str):
-        if self.entries.pop(_key(path), None) is not None:
+        """Retire le document de la liste ; renvoie son entrée (pour « Annuler »)."""
+        entry = self.entries.pop(_key(path), None)
+        if entry is not None:
+            self.save()
+        return entry
+
+    def put_back(self, path: str, entry: dict):
+        if entry is not None:
+            self.entries[_key(path)] = entry
             self.save()
 
     def clear(self):

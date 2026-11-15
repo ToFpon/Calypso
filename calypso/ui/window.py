@@ -790,8 +790,15 @@ class MainWindow(Adw.ApplicationWindow):
         toast(self, tr("Image copiée"))
 
     def _forget_recent(self, path):
-        history().forget(path)
+        entry = history().forget(path)
         self.welcome.refresh()
+
+        def undo():
+            history().put_back(path, entry)
+            self.welcome.refresh()
+        if entry is not None:
+            toast(self, tr("« {0} » retiré de la liste").format(shown(os.path.basename(path))),
+                  tr("Annuler"), undo)
 
     # ======================================================================================
     # Enregistrer une copie, propriétés

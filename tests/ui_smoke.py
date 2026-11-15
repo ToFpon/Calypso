@@ -690,10 +690,23 @@ def accueil_recents(win):
     check(os.path.realpath(BOOK) in names, "accueil : le livre dans les documents récents")
     yield Wait(3, until=lambda: os.path.isdir(os.path.join(os.environ["XDG_CACHE_HOME"], "calypso", "thumbs")))
     check(os.path.isdir(os.path.join(os.environ["XDG_CACHE_HOME"], "calypso", "thumbs")), "vignettes des récents")
-    w.activate_action("win.forget-recent", GLib.Variant.new_string(os.path.realpath(BOOK)))
+    tile = next(c.get_child() for c in _flow_children(w.welcome.flow)
+                if c.get_child()._path == os.path.realpath(BOOK))
+    check(tile._close.get_opacity() == 0, "croix cachée hors survol")
+    tile._close.emit("clicked")
     yield Wait(0.3)
     names = [c.get_child()._path for c in _flow_children(w.welcome.flow)]
-    check(os.path.realpath(BOOK) not in names, "« Retirer de la liste »")
+    check(os.path.realpath(BOOK) not in names, "croix : retiré de la liste")
+    toasts = []
+    w.toast_overlay.add_toast = lambda t: toasts.append(t)
+    w.activate_action("win.forget-recent", GLib.Variant.new_string(os.path.realpath(MIXED)))
+    yield Wait(0.2)
+    check(toasts and toasts[0].get_button_label(), "toast avec « Annuler »")
+    if toasts:
+        toasts[0].emit("button-clicked")
+    yield Wait(0.3)
+    names = [c.get_child()._path for c in _flow_children(w.welcome.flow)]
+    check(os.path.realpath(MIXED) in names, "« Annuler » : remis dans la liste")
     w.close()
     yield Wait(0.3)
 

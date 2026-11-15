@@ -33,3 +33,11 @@ popover.calypso-link-preview > contents {
   border-radius: 3px;
   box-shadow: 0 0 0 2px @accent_color;
 }
+
+/* croix « Retirer de la liste » sur les vignettes des récents : apparaît au survol */
+.calypso-recent-remove {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  transition: opacity 150ms;
+}

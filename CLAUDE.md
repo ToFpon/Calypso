@@ -78,6 +78,9 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
 - `ui/search.py` : recherche dans un fil depuis la page affichée, résultats page par page, génération pour
   abandonner l'ancienne ; accents et casse ignorés (IGNORE_DIACRITICS), mots coupés en fin de ligne trouvés
   (MULTILINE) ; options casse / mots entiers.
+- Accueil (`ui/welcome.py`) : vignettes des récents ; petite croix au survol (idée de Tof, aussi au focus
+  clavier) = « Retirer de la liste », toast « Annuler » (`History.forget` renvoie l'entrée, `put_back`).
+  Vignette = Gtk.Overlay (bouton + croix) : pas de bouton dans un bouton.
 - `backend/history.py` : récents + état par document (chemin réel), 300 au plus, valeurs du bon type
   seulement. `backend/thumbs.py` : vignettes des récents (PNG en cache, clé = chemin + taille + date).
 

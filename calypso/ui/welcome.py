@@ -82,7 +82,27 @@ class Welcome(Gtk.ScrolledWindow):
         click = Gtk.GestureClick(button=3)
         click.connect("pressed", lambda g, n, x, y: self._menu(btn, x, y))
         btn.add_controller(click)
-        return btn
+        # petite croix au survol (idée de Tof) : retire le document de la liste, « Annuler » dans le toast
+        tile = Gtk.Overlay(child=btn)
+        tile._path = path
+        close = Gtk.Button(icon_name="window-close-symbolic", tooltip_text=tr("Retirer de la liste"),
+                           halign=Gtk.Align.END, valign=Gtk.Align.START, margin_top=4, margin_end=4,
+                           css_classes=["circular", "osd", "calypso-recent-remove"])
+        close.set_opacity(0)
+        close.connect("clicked", lambda *_: self.window.activate_action(
+            "win.forget-recent", GLib.Variant.new_string(path)))
+        tile.add_overlay(close)
+        tile._close = close
+        hover = Gtk.EventControllerMotion()
+        hover.connect("enter", lambda *_: close.set_opacity(1))
+        hover.connect("leave", lambda *_: close.set_opacity(0))
+        tile.add_controller(hover)
+        # au clavier aussi : la croix se montre quand la vignette a le focus
+        focus = Gtk.EventControllerFocus()
+        focus.connect("enter", lambda *_: close.set_opacity(1))
+        focus.connect("leave", lambda *_: close.set_opacity(0))
+        tile.add_controller(focus)
+        return tile
 
     def _menu(self, btn, x, y):
         menu = Gio.Menu()

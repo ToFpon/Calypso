@@ -442,11 +442,11 @@ msgstr "Ein Dokument öffnen"
 msgid "Nouvelle fenêtre"
 msgstr "Neues Fenster"
 
-#: calypso/ui/shortcuts.py:20 calypso/ui/window.py:214 calypso/ui/window.py:1011 calypso/ui/window.py:909
+#: calypso/ui/shortcuts.py:20 calypso/ui/window.py:214 calypso/ui/window.py:1018 calypso/ui/window.py:916
 msgid "Enregistrer"
 msgstr "Speichern"
 
-#: calypso/ui/shortcuts.py:21 calypso/ui/window.py:817
+#: calypso/ui/shortcuts.py:21 calypso/ui/window.py:824
 msgid "Enregistrer sous"
 msgstr "Speichern unter"
 
@@ -558,15 +558,15 @@ msgstr "Keine Anmerkungen"
 msgid "Page {0}"
 msgstr "Seite {0}"
 
-#: calypso/ui/welcome.py:89
+#: calypso/ui/welcome.py:109
 msgid "Ouvrir dans une nouvelle fenêtre"
 msgstr "In neuem Fenster öffnen"
 
-#: calypso/ui/welcome.py:92 calypso/ui/window.py:216
+#: calypso/ui/welcome.py:112 calypso/ui/window.py:216
 msgid "Afficher dans le dossier"
 msgstr "Im Ordner anzeigen"
 
-#: calypso/ui/welcome.py:95
+#: calypso/ui/welcome.py:115 calypso/ui/welcome.py:88
 msgid "Retirer de la liste"
 msgstr "Aus der Liste entfernen"
 
@@ -582,7 +582,7 @@ msgstr "Zuletzt geöffnete Dokumente"
 msgid "Glissez un PDF dans cette fenêtre, ou choisissez-en un"
 msgstr "Ziehen Sie eine PDF-Datei in dieses Fenster oder wählen Sie eine aus"
 
-#: calypso/ui/window.py:1054
+#: calypso/ui/window.py:1061
 msgid "Ce n'est pas un document PDF valide, ou il est abîmé."
 msgstr "Dies ist kein gültiges PDF-Dokument, oder es ist beschädigt."
 
@@ -594,15 +594,15 @@ msgstr "PDF-Dokumente"
 msgid "Tous les fichiers"
 msgstr "Alle Dateien"
 
-#: calypso/ui/window.py:1049
+#: calypso/ui/window.py:1056
 msgid "Le fichier n'existe plus."
 msgstr "Die Datei existiert nicht mehr."
 
-#: calypso/ui/window.py:1051
+#: calypso/ui/window.py:1058
 msgid "Accès refusé."
 msgstr "Zugriff verweigert."
 
-#: calypso/ui/window.py:1053
+#: calypso/ui/window.py:1060
 msgid "Le document n'a aucune page."
 msgstr "Das Dokument hat keine Seiten."
 
@@ -638,7 +638,7 @@ msgstr "Verkleinern"
 msgid "Document protégé"
 msgstr "Geschütztes Dokument"
 
-#: calypso/ui/window.py:453 calypso/ui/window.py:1009
+#: calypso/ui/window.py:453 calypso/ui/window.py:1016 calypso/ui/window.py:801
 msgid "Annuler"
 msgstr "Abbrechen"
 
@@ -654,11 +654,11 @@ msgstr "Bild speichern"
 msgid "Image copiée"
 msgstr "Bild kopiert"
 
-#: calypso/ui/window.py:1008
+#: calypso/ui/window.py:1015
 msgid "Les annotations et les champs remplis seront perdus si vous n'enregistrez pas."
 msgstr "Anmerkungen und ausgefüllte Felder gehen verloren, wenn Sie nicht speichern."
 
-#: calypso/ui/window.py:1010
+#: calypso/ui/window.py:1017
 msgid "Ne pas enregistrer"
 msgstr "Nicht speichern"
 
@@ -722,11 +722,11 @@ msgstr "Anmerkung löschen"
 msgid "Copier"
 msgstr "Kopieren"
 
-#: calypso/ui/window.py:854
+#: calypso/ui/window.py:861
 msgid "Document enregistré"
 msgstr "Dokument gespeichert"
 
-#: calypso/ui/window.py:889
+#: calypso/ui/window.py:896
 msgid "Couleur"
 msgstr "Farbe"
 
@@ -742,19 +742,19 @@ msgstr "{0} - Bild Seite {1}.png"
 msgid "Image enregistrée"
 msgstr "Bild gespeichert"
 
-#: calypso/ui/window.py:838
+#: calypso/ui/window.py:845
 msgid "Impossible d'enregistrer le document"
 msgstr "Das Dokument kann nicht gespeichert werden"
 
-#: calypso/ui/window.py:904
+#: calypso/ui/window.py:911
 msgid "Annuler (Ctrl+Z)"
 msgstr "Rückgängig (Strg+Z)"
 
-#: calypso/ui/window.py:906
+#: calypso/ui/window.py:913
 msgid "Rétablir (Ctrl+Maj+Z)"
 msgstr "Wiederholen (Umschalt+Strg+Z)"
 
-#: calypso/ui/window.py:1007
+#: calypso/ui/window.py:1014
 msgid "Enregistrer les modifications de « {0} » ?"
 msgstr "Änderungen an „{0}“ speichern?"
 
@@ -781,6 +781,10 @@ msgstr "Linkadresse kopieren"
 #: calypso/ui/window.py:778
 msgid "Impossible d'enregistrer l'image"
 msgstr "Das Bild kann nicht gespeichert werden"
+
+#: calypso/ui/window.py:800
+msgid "« {0} » retiré de la liste"
+msgstr "„{0}“ aus der Liste entfernt"
 
 #: calypso/ui/window.py:707
 msgid "Aller à la page {0}"

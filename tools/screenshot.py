@@ -6,7 +6,7 @@
   --file=PDF        document ouvert (par défaut : le livre d'essai de tests/samples.py)
   --size=LxH        taille de la fenêtre (1100x800)
   --dark            thème sombre
-  --welcome         accueil (documents récents : ceux du HOME jetable)
+  --welcome         accueil (documents récents : ceux du HOME jetable) ; --hover : croix d'une vignette
   --sidebar=NOM     thumbnails, outline, results ; --no-sidebar pour le masquer
   --search=TEXTE    recherche lancée
   --zoom=Z          zoom libre (1.0 = 100 %) ; --fit-page
@@ -99,6 +99,9 @@ def start():
         win = app.new_window()
         win.set_default_size(w, h)
         win.welcome.refresh()
+        if args.get("hover"):                 # croix « Retirer de la liste » montrée sur la 2e vignette
+            tile = win.welcome.flow.get_first_child().get_next_sibling().get_child()
+            tile._close.set_opacity(1)
         win.present()
         shot(win, delay)
         return False

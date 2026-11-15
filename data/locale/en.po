@@ -442,11 +442,11 @@ msgstr "Open a Document"
 msgid "Nouvelle fenêtre"
 msgstr "New Window"
 
-#: calypso/ui/shortcuts.py:20 calypso/ui/window.py:214 calypso/ui/window.py:1011 calypso/ui/window.py:909
+#: calypso/ui/shortcuts.py:20 calypso/ui/window.py:214 calypso/ui/window.py:1018 calypso/ui/window.py:916
 msgid "Enregistrer"
 msgstr "Save"
 
-#: calypso/ui/shortcuts.py:21 calypso/ui/window.py:817
+#: calypso/ui/shortcuts.py:21 calypso/ui/window.py:824
 msgid "Enregistrer sous"
 msgstr "Save As"
 
@@ -558,15 +558,15 @@ msgstr "No annotations"
 msgid "Page {0}"
 msgstr "Page {0}"
 
-#: calypso/ui/welcome.py:89
+#: calypso/ui/welcome.py:109
 msgid "Ouvrir dans une nouvelle fenêtre"
 msgstr "Open in a New Window"
 
-#: calypso/ui/welcome.py:92 calypso/ui/window.py:216
+#: calypso/ui/welcome.py:112 calypso/ui/window.py:216
 msgid "Afficher dans le dossier"
 msgstr "Show in Folder"
 
-#: calypso/ui/welcome.py:95
+#: calypso/ui/welcome.py:115 calypso/ui/welcome.py:88
 msgid "Retirer de la liste"
 msgstr "Remove from the List"
 
@@ -582,7 +582,7 @@ msgstr "Recent documents"
 msgid "Glissez un PDF dans cette fenêtre, ou choisissez-en un"
 msgstr "Drop a PDF into this window, or choose one"
 
-#: calypso/ui/window.py:1054
+#: calypso/ui/window.py:1061
 msgid "Ce n'est pas un document PDF valide, ou il est abîmé."
 msgstr "This is not a valid PDF document, or it is damaged."
 
@@ -594,15 +594,15 @@ msgstr "PDF documents"
 msgid "Tous les fichiers"
 msgstr "All files"
 
-#: calypso/ui/window.py:1049
+#: calypso/ui/window.py:1056
 msgid "Le fichier n'existe plus."
 msgstr "The file no longer exists."
 
-#: calypso/ui/window.py:1051
+#: calypso/ui/window.py:1058
 msgid "Accès refusé."
 msgstr "Access denied."
 
-#: calypso/ui/window.py:1053
+#: calypso/ui/window.py:1060
 msgid "Le document n'a aucune page."
 msgstr "The document has no pages."
 
@@ -638,7 +638,7 @@ msgstr "Zoom Out"
 msgid "Document protégé"
 msgstr "Protected document"
 
-#: calypso/ui/window.py:453 calypso/ui/window.py:1009
+#: calypso/ui/window.py:453 calypso/ui/window.py:1016 calypso/ui/window.py:801
 msgid "Annuler"
 msgstr "Cancel"
 
@@ -654,11 +654,11 @@ msgstr "Save the Image"
 msgid "Image copiée"
 msgstr "Image copied"
 
-#: calypso/ui/window.py:1008
+#: calypso/ui/window.py:1015
 msgid "Les annotations et les champs remplis seront perdus si vous n'enregistrez pas."
 msgstr "Annotations and filled-in fields will be lost if you don't save."
 
-#: calypso/ui/window.py:1010
+#: calypso/ui/window.py:1017
 msgid "Ne pas enregistrer"
 msgstr "Don't Save"
 
@@ -722,11 +722,11 @@ msgstr "Delete Annotation"
 msgid "Copier"
 msgstr "Copy"
 
-#: calypso/ui/window.py:854
+#: calypso/ui/window.py:861
 msgid "Document enregistré"
 msgstr "Document saved"
 
-#: calypso/ui/window.py:889
+#: calypso/ui/window.py:896
 msgid "Couleur"
 msgstr "Color"
 
@@ -742,19 +742,19 @@ msgstr "{0} - image page {1}.png"
 msgid "Image enregistrée"
 msgstr "Image saved"
 
-#: calypso/ui/window.py:838
+#: calypso/ui/window.py:845
 msgid "Impossible d'enregistrer le document"
 msgstr "Unable to save the document"
 
-#: calypso/ui/window.py:904
+#: calypso/ui/window.py:911
 msgid "Annuler (Ctrl+Z)"
 msgstr "Undo (Ctrl+Z)"
 
-#: calypso/ui/window.py:906
+#: calypso/ui/window.py:913
 msgid "Rétablir (Ctrl+Maj+Z)"
 msgstr "Redo (Shift+Ctrl+Z)"
 
-#: calypso/ui/window.py:1007
+#: calypso/ui/window.py:1014
 msgid "Enregistrer les modifications de « {0} » ?"
 msgstr "Save changes to “{0}”?"
 
@@ -781,6 +781,10 @@ msgstr "Copy Link Address"
 #: calypso/ui/window.py:778
 msgid "Impossible d'enregistrer l'image"
 msgstr "Unable to save the image"
+
+#: calypso/ui/window.py:800
+msgid "« {0} » retiré de la liste"
+msgstr "“{0}” removed from the list"
 
 #: calypso/ui/window.py:707
 msgid "Aller à la page {0}"
