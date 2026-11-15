@@ -81,9 +81,10 @@ def make_book(path: str, pages: int = 12):
         if p == 0:
             ctx.set_font_size(11)
             ctx.set_source_rgb(0.1, 0.3, 0.8)
-            ctx.tag_begin(cairo.TAG_LINK, "page=6 pos=[64 80]")
+            target = min(6, pages)
+            ctx.tag_begin(cairo.TAG_LINK, f"page={target} pos=[64 80]")
             ctx.move_to(64, 760)
-            ctx.show_text("Aller au chapitre 2, page 6")
+            ctx.show_text(f"Aller au chapitre 2, page {target}")
             ctx.tag_end(cairo.TAG_LINK)
             ctx.tag_begin(cairo.TAG_LINK, "uri='https://example.org/calypso'")
             ctx.move_to(64, 780)
