@@ -1,4 +1,4 @@
-calypso (0.4.0~noble1) noble; urgency=medium
+calypso (1.0.0~noble1) noble; urgency=medium
 
   * Première version publiée : visionneuse PDF pour GNOME sur Poppler.
   * Lecture : défilement continu ou page par page, deux pages, zoom, rotation,
@@ -12,4 +12,4 @@ calypso (0.4.0~noble1) noble; urgency=medium
   * Outils : organiser les pages, fusionner, compresser, filigrane,
     caviarder, protéger par un mot de passe.
 
- -- Tof <nourpon@gmail.com>  Sun, 15 Nov 2026 12:08:51 +0000
+ -- Tof <nourpon@gmail.com>  Sun, 15 Nov 2026 12:21:20 +0000

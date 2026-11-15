@@ -40,7 +40,7 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
    supprimer, extraire, éclater ; « Remplacer le document » avec « Annuler »), fusionner, compresser,
    filigrane (aperçu), caviarder, protéger par un mot de passe (générateur + jauge de Pressoir), retirer
    le mot de passe.
-4. FAIT (0.4.0) : présentation (F5), impression (Ctrl+P), signatures (bandeau + panneau, signer, importer
+4. FAIT (publiée en 1.0.0) : présentation (F5), impression (Ctrl+P), signatures (bandeau + panneau, signer, importer
    un .p12), paquet (.deb, workflow, PPA, site, README). Pas fait : mode curseur (F7, rare). Plus tard
    peut-être : DjVu, TIFF, BD (CBZ / CBR) comme Papers ; texte libre et encre (pypdf).
 
