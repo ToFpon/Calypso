@@ -1,0 +1,602 @@
+# Calypso — modèle de traduction (langue source : français).
+msgid ""
+msgstr ""
+"Project-Id-Version: Calypso\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: calypso/app.py:30
+msgid "Afficher la version"
+msgstr ""
+
+#: calypso/app.py:32
+msgid "Ouvrir à cette page (numéro ou étiquette)"
+msgstr ""
+
+#: calypso/app.py:32
+msgid "PAGE"
+msgstr ""
+
+#: calypso/app.py:34
+msgid "Ouvrir une nouvelle fenêtre"
+msgstr ""
+
+#: calypso/app.py:153
+msgid "Inspiré de"
+msgstr ""
+
+#: calypso/app.py:154
+msgid "Moteurs"
+msgstr ""
+
+#: calypso/app.py:148
+msgid "Une visionneuse de documents PDF pour GNOME, avec les outils pour les modifier."
+msgstr ""
+
+#: calypso/features.py:25
+msgid "Reprendre où on s'était arrêté"
+msgstr ""
+
+#: calypso/features.py:26
+msgid "Un document rouvert revient à la page, au zoom et à la disposition qu'il avait"
+msgstr ""
+
+#: calypso/features.py:28
+msgid "Aperçu des liens"
+msgstr ""
+
+#: calypso/features.py:29
+msgid "Le survol d'un lien vers une autre page du document montre cette page dans une bulle"
+msgstr ""
+
+#: calypso/features.py:31
+msgid "Recharger un document modifié"
+msgstr ""
+
+#: calypso/features.py:32
+msgid "Un document changé par un autre programme est relu tout seul, à la même page"
+msgstr ""
+
+#: calypso/ui/preferences.py:48
+msgid "Style"
+msgstr ""
+
+#: calypso/ui/preferences.py:41 calypso/ui/window.py:213
+msgid "Préférences"
+msgstr ""
+
+#: calypso/ui/preferences.py:46
+msgid "Général"
+msgstr ""
+
+#: calypso/ui/preferences.py:47
+msgid "Apparence"
+msgstr ""
+
+#: calypso/ui/preferences.py:48 calypso/ui/preferences.py:53
+msgid "Comme le système"
+msgstr ""
+
+#: calypso/ui/preferences.py:48
+msgid "Clair"
+msgstr ""
+
+#: calypso/ui/preferences.py:48
+msgid "Sombre"
+msgstr ""
+
+#: calypso/ui/preferences.py:53
+msgid "Langue"
+msgstr ""
+
+#: calypso/ui/preferences.py:54
+msgid "Appliquée au prochain démarrage"
+msgstr ""
+
+#: calypso/ui/preferences.py:56
+msgid "Nouveaux documents"
+msgstr ""
+
+#: calypso/ui/preferences.py:57
+msgid "Réglages d'un document ouvert pour la première fois ; ensuite, chaque document garde les siens"
+msgstr ""
+
+#: calypso/ui/preferences.py:59 calypso/ui/window.py:146
+msgid "Zoom"
+msgstr ""
+
+#: calypso/ui/preferences.py:61 calypso/ui/window.py:201
+msgid "Défilement continu"
+msgstr ""
+
+#: calypso/ui/preferences.py:62 calypso/ui/window.py:202
+msgid "Deux pages côte à côte"
+msgstr ""
+
+#: calypso/ui/preferences.py:63 calypso/ui/shortcuts.py:46 calypso/ui/window.py:204
+msgid "Mode nuit"
+msgstr ""
+
+#: calypso/ui/preferences.py:63
+msgid "Couleurs inversées : texte clair sur fond sombre"
+msgstr ""
+
+#: calypso/ui/preferences.py:68
+msgid "Fonctionnalités"
+msgstr ""
+
+#: calypso/ui/preferences.py:70
+msgid "Chaque fonctionnalité s'active ou se coupe tout de suite, sans redémarrer Calypso"
+msgstr ""
+
+#: calypso/ui/preferences.py:59 calypso/ui/window.py:222
+msgid "Ajuster à la largeur"
+msgstr ""
+
+#: calypso/ui/preferences.py:59 calypso/ui/window.py:223
+msgid "Ajuster à la page"
+msgstr ""
+
+#: calypso/ui/properties.py:17
+msgid "Lettre US"
+msgstr ""
+
+#: calypso/ui/properties.py:17
+msgid "Légal US"
+msgstr ""
+
+#: calypso/ui/properties.py:17
+msgid "Tabloïd"
+msgstr ""
+
+#: calypso/ui/properties.py:32
+msgid "Go"
+msgstr ""
+
+#: calypso/ui/properties.py:32
+msgid "Mo"
+msgstr ""
+
+#: calypso/ui/properties.py:32
+msgid "ko"
+msgstr ""
+
+#: calypso/ui/properties.py:35
+msgid "{0} octets"
+msgstr ""
+
+#: calypso/ui/properties.py:49 calypso/ui/shortcuts.py:22 calypso/ui/window.py:212
+msgid "Propriétés du document"
+msgstr ""
+
+#: calypso/ui/properties.py:52 calypso/ui/shortcuts.py:17
+msgid "Document"
+msgstr ""
+
+#: calypso/ui/properties.py:53
+msgid "Titre"
+msgstr ""
+
+#: calypso/ui/properties.py:53
+msgid "Auteur"
+msgstr ""
+
+#: calypso/ui/properties.py:54
+msgid "Sujet"
+msgstr ""
+
+#: calypso/ui/properties.py:54
+msgid "Mots-clés"
+msgstr ""
+
+#: calypso/ui/properties.py:57
+msgid "Création"
+msgstr ""
+
+#: calypso/ui/properties.py:58
+msgid "Créé le"
+msgstr ""
+
+#: calypso/ui/properties.py:58
+msgid "Modifié le"
+msgstr ""
+
+#: calypso/ui/properties.py:59
+msgid "Créé avec"
+msgstr ""
+
+#: calypso/ui/properties.py:59
+msgid "Converti en PDF par"
+msgstr ""
+
+#: calypso/ui/properties.py:62
+msgid "Fichier"
+msgstr ""
+
+#: calypso/ui/properties.py:68
+msgid "Emplacement"
+msgstr ""
+
+#: calypso/ui/properties.py:68
+msgid "Taille"
+msgstr ""
+
+#: calypso/ui/properties.py:68
+msgid "Pages"
+msgstr ""
+
+#: calypso/ui/properties.py:69
+msgid "Format des pages"
+msgstr ""
+
+#: calypso/ui/properties.py:69
+msgid "Format"
+msgstr ""
+
+#: calypso/ui/properties.py:70
+msgid "Optimisé pour le Web"
+msgstr ""
+
+#: calypso/ui/properties.py:26
+msgid "portrait"
+msgstr ""
+
+#: calypso/ui/properties.py:26
+msgid "paysage"
+msgstr ""
+
+#: calypso/ui/properties.py:70
+msgid "Oui"
+msgstr ""
+
+#: calypso/ui/properties.py:70
+msgid "Non"
+msgstr ""
+
+#: calypso/ui/search.py:54
+msgid "Respecter la casse"
+msgstr ""
+
+#: calypso/ui/search.py:55
+msgid "Mots entiers seulement"
+msgstr ""
+
+#: calypso/ui/search.py:171 calypso/ui/search.py:180
+msgid "Recherche…"
+msgstr ""
+
+#: calypso/ui/search.py:36
+msgid "Rechercher dans le document"
+msgstr ""
+
+#: calypso/ui/search.py:45
+msgid "Résultat précédent (Maj+Entrée)"
+msgstr ""
+
+#: calypso/ui/search.py:47
+msgid "Résultat suivant (Entrée)"
+msgstr ""
+
+#: calypso/ui/search.py:57
+msgid "Options de recherche"
+msgstr ""
+
+#: calypso/ui/search.py:173 calypso/ui/search.py:181
+msgid "Aucun résultat"
+msgstr ""
+
+#: calypso/ui/search.py:177
+msgid "{0} sur {1}"
+msgstr ""
+
+#: calypso/ui/search.py:177 calypso/ui/search.py:181
+msgid "{0} résultat"
+msgid_plural "{0} résultats"
+msgstr[0] ""
+msgstr[1] ""
+
+#: calypso/ui/shortcuts.py:26
+msgid "Déplacement"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:34
+msgid "Recherche et texte"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:40
+msgid "Affichage"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:18 calypso/ui/welcome.py:25 calypso/ui/window.py:352
+msgid "Ouvrir un document"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:19 calypso/ui/window.py:195
+msgid "Nouvelle fenêtre"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:20 calypso/ui/window.py:759
+msgid "Enregistrer une copie"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:21 calypso/ui/window.py:198
+msgid "Recharger"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:23
+msgid "Fermer la fenêtre"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:24
+msgid "Quitter"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:27
+msgid "Écran suivant"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:28
+msgid "Écran précédent"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:29
+msgid "Page suivante / précédente"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:30
+msgid "Première / dernière page"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:31
+msgid "Aller à une page"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:32
+msgid "Retour / avance dans l'historique"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:35
+msgid "Rechercher"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:36
+msgid "Résultat suivant / précédent"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:37
+msgid "Copier le texte sélectionné"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:38 calypso/ui/window.py:675
+msgid "Tout sélectionner"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:41
+msgid "Zoom avant / arrière"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:42
+msgid "Taille réelle (100 %)"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:43
+msgid "Ajuster à la largeur / à la page"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:44
+msgid "Défilement continu / deux pages"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:45
+msgid "Pivoter à gauche / à droite"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:47
+msgid "Panneau latéral"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:48 calypso/ui/window.py:209
+msgid "Plein écran"
+msgstr ""
+
+#: calypso/ui/shortcuts.py:49 calypso/ui/window.py:214
+msgid "Raccourcis clavier"
+msgstr ""
+
+#: calypso/ui/sidebar.py:89
+msgid "Miniatures"
+msgstr ""
+
+#: calypso/ui/sidebar.py:90
+msgid "Sommaire"
+msgstr ""
+
+#: calypso/ui/sidebar.py:91
+msgid "Résultats de la recherche"
+msgstr ""
+
+#: calypso/ui/welcome.py:77
+msgid "Ouvrir dans une nouvelle fenêtre"
+msgstr ""
+
+#: calypso/ui/welcome.py:80 calypso/ui/window.py:197
+msgid "Afficher dans le dossier"
+msgstr ""
+
+#: calypso/ui/welcome.py:83
+msgid "Retirer de la liste"
+msgstr ""
+
+#: calypso/ui/welcome.py:26
+msgid "Glissez un PDF dans cette fenêtre, ou choisissez-en un"
+msgstr ""
+
+#: calypso/ui/welcome.py:28 calypso/ui/window.py:194 calypso/ui/window.py:160
+msgid "Ouvrir…"
+msgstr ""
+
+#: calypso/ui/welcome.py:32
+msgid "Documents récents"
+msgstr ""
+
+#: calypso/ui/window.py:863
+msgid "Ce n'est pas un document PDF valide, ou il est abîmé."
+msgstr ""
+
+#: calypso/ui/window.py:33
+msgid "Documents PDF"
+msgstr ""
+
+#: calypso/ui/window.py:33
+msgid "Tous les fichiers"
+msgstr ""
+
+#: calypso/ui/window.py:858
+msgid "Le fichier n'existe plus."
+msgstr ""
+
+#: calypso/ui/window.py:860
+msgid "Accès refusé."
+msgstr ""
+
+#: calypso/ui/window.py:862
+msgid "Le document n'a aucune page."
+msgstr ""
+
+#: calypso/ui/window.py:196
+msgid "Enregistrer une copie…"
+msgstr ""
+
+#: calypso/ui/window.py:203
+msgid "Première page seule"
+msgstr ""
+
+#: calypso/ui/window.py:207
+msgid "Pivoter à gauche"
+msgstr ""
+
+#: calypso/ui/window.py:208
+msgid "Pivoter à droite"
+msgstr ""
+
+#: calypso/ui/window.py:215
+msgid "À propos de Calypso"
+msgstr ""
+
+#: calypso/ui/window.py:232
+msgid "Zoom avant"
+msgstr ""
+
+#: calypso/ui/window.py:233
+msgid "Zoom arrière"
+msgstr ""
+
+#: calypso/ui/window.py:418
+msgid "Document protégé"
+msgstr ""
+
+#: calypso/ui/window.py:419
+msgid "Annuler"
+msgstr ""
+
+#: calypso/ui/window.py:420
+msgid "Déverrouiller"
+msgstr ""
+
+#: calypso/ui/window.py:718
+msgid "Enregistrer l'image"
+msgstr ""
+
+#: calypso/ui/window.py:729
+msgid "Image copiée"
+msgstr ""
+
+#: calypso/ui/window.py:125
+msgid "Panneau latéral (F9)"
+msgstr ""
+
+#: calypso/ui/window.py:129
+msgid "Numéro de la page (Ctrl+L)"
+msgstr ""
+
+#: calypso/ui/window.py:143
+msgid "Menu principal"
+msgstr ""
+
+#: calypso/ui/window.py:148
+msgid "Rechercher (Ctrl+F)"
+msgstr ""
+
+#: calypso/ui/window.py:400 calypso/ui/window.py:406
+msgid "Impossible d'ouvrir le document"
+msgstr ""
+
+#: calypso/ui/window.py:413
+msgid "Mot de passe"
+msgstr ""
+
+#: calypso/ui/window.py:415
+msgid "« {0} » est protégé par un mot de passe."
+msgstr ""
+
+#: calypso/ui/window.py:669
+msgid "Enregistrer l'image sous…"
+msgstr ""
+
+#: calypso/ui/window.py:670
+msgid "Copier l'image"
+msgstr ""
+
+#: calypso/ui/window.py:674
+msgid "Copier"
+msgstr ""
+
+#: calypso/ui/window.py:417
+msgid "Mot de passe incorrect."
+msgstr ""
+
+#: calypso/ui/window.py:706
+msgid "{0} - image page {1}.png"
+msgstr ""
+
+#: calypso/ui/window.py:715
+msgid "Image enregistrée"
+msgstr ""
+
+#: calypso/ui/window.py:752
+msgid "Copie enregistrée"
+msgstr ""
+
+#: calypso/ui/window.py:548
+msgid "sur {0}"
+msgstr ""
+
+#: calypso/ui/window.py:550
+msgid "({0} sur {1})"
+msgstr ""
+
+#: calypso/ui/window.py:646
+msgid "Fichier introuvable"
+msgstr ""
+
+#: calypso/ui/window.py:664
+msgid "Ouvrir le lien"
+msgstr ""
+
+#: calypso/ui/window.py:665
+msgid "Copier l'adresse du lien"
+msgstr ""
+
+#: calypso/ui/window.py:717
+msgid "Impossible d'enregistrer l'image"
+msgstr ""
+
+#: calypso/ui/window.py:758
+msgid "Impossible d'enregistrer la copie"
+msgstr ""
+
+#: calypso/ui/window.py:661
+msgid "Aller à la page {0}"
+msgstr ""

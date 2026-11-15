@@ -1,0 +1,26 @@
+[Desktop Entry]
+Type=Application
+Name=Calypso
+GenericName=Document Viewer
+GenericName[fr]=Visionneuse de documents
+GenericName[de]=Dokumentenbetrachter
+Comment=Read PDF documents, and the tools to change them
+Comment[fr]=Lire les documents PDF, avec les outils pour les modifier
+Comment[de]=PDF-Dokumente lesen, mit den Werkzeugen, um sie zu ändern
+Exec=calypso %U
+Icon=io.github.calypso.Calypso
+Terminal=false
+Categories=GTK;GNOME;Office;Viewer;Graphics;
+MimeType=application/pdf;application/x-pdf;application/x-bzpdf;application/x-gzpdf;
+Keywords=pdf;document;viewer;reader;papers;evince;
+Keywords[fr]=pdf;document;visionneuse;lecteur;papers;evince;
+Keywords[de]=PDF;Dokument;Betrachter;Leser;Papers;Evince;
+StartupNotify=true
+DBusActivatable=false
+Actions=new-window;
+
+[Desktop Action new-window]
+Name=New Window
+Name[fr]=Nouvelle fenêtre
+Name[de]=Neues Fenster
+Exec=calypso --new-window

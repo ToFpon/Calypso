@@ -1,0 +1,22 @@
+/* Calypso : mise en page seulement, les couleurs viennent du thème GTK du système. */
+
+.calypso-view {
+  /* fond derrière les pages : celui de la fenêtre, un peu assombri comme dans Papers */
+  background-color: alpha(currentColor, 0.06);
+}
+
+.calypso-sidebar .calypso-thumbs > row {
+  padding: 4px 8px;
+}
+
+.calypso-recent {
+  padding: 8px;
+}
+
+.calypso-recent-thumb picture {
+  box-shadow: 0 1px 4px alpha(black, 0.3);
+}
+
+popover.calypso-link-preview > contents {
+  padding: 0;
+}
