@@ -1,0 +1,15 @@
+calypso (0.4.0~noble1) noble; urgency=medium
+
+  * Première version publiée : visionneuse PDF pour GNOME sur Poppler.
+  * Lecture : défilement continu ou page par page, deux pages, zoom, rotation,
+    mode nuit, plein écran, présentation (F5), miniatures, sommaire,
+    recherche, sélection du texte, liens avec aperçu, impression, documents
+    protégés, rechargement automatique, reprise de la lecture, récents.
+  * Annotations (notes, surligner, souligner, barrer, formes), formulaires,
+    enregistrement dans le fichier.
+  * Signatures numériques : vérification, signature avec un certificat,
+    import d'un certificat .p12 / .pfx.
+  * Outils : organiser les pages, fusionner, compresser, filigrane,
+    caviarder, protéger par un mot de passe.
+
+ -- Tof <nourpon@gmail.com>  Sun, 15 Nov 2026 12:08:51 +0000

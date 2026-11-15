@@ -40,8 +40,9 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
    supprimer, extraire, éclater ; « Remplacer le document » avec « Annuler »), fusionner, compresser,
    filigrane (aperçu), caviarder, protéger par un mot de passe (générateur + jauge de Pressoir), retirer
    le mot de passe.
-4. Présentation (F5), impression, signatures (vérifier, signer), mode curseur (F7), puis paquet (.deb,
-   PPA, site) comme Nausicaa. Plus tard peut-être : DjVu, TIFF, BD (CBZ / CBR) comme Papers.
+4. FAIT (0.4.0) : présentation (F5), impression (Ctrl+P), signatures (bandeau + panneau, signer, importer
+   un .p12), paquet (.deb, workflow, PPA, site, README). Pas fait : mode curseur (F7, rare). Plus tard
+   peut-être : DjVu, TIFF, BD (CBZ / CBR) comme Papers ; texte libre et encre (pypdf).
 
 ## Architecture
 
@@ -132,6 +133,31 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
   MULTIPLE, la FlowBox prenait le glisser pour son cadre de sélection (et sans adjustment : CRITICAL
   gtk_adjustment_get_value) : les miniatures ne partaient jamais. Vrai glisser testé dans ui_mouse (le
   glisser xdotool tourne dans un FIL : la boucle GTK doit traiter les mouvements au fil de l'eau).
+
+- Signatures (`backend/signing.py`, `ui/signatures.py`) : base NSS choisie UNE fois par processus, avant
+  toute opération NSS (`ensure_nss` → `Poppler.set_nss_dir`) : CALYPSO_NSS_DIR (tests), sinon profil Firefox
+  (classique ou snap), sinon ~/.pki/nssdb (créé vide par certutil). Vérification dans un fil, sans OCSP
+  (rien sur le réseau). Signer : document RELU du fichier (Poppler signe dans son fil, sans notre verrou),
+  copie « nom (signé).pdf » ; Poppler 24.02 avorte (« basic_string: construction from null ») si une des
+  chaînes de SigningData manque → toutes posées ; SigningData et document gardés vivants jusqu'à la fin
+  (sinon « No signature given »). Import .p12 : pk12util. Test : certificat auto-signé fait par openssl
+  (`samples.make_nss`) → « certificat non reconnu comme de confiance » (avertissement, pas valide).
+- Présentation (`ui/presentation.py`) : fenêtre plein écran noire (seule couleur fixe), page à la taille de
+  l'écran, rendu dans un fil (page + voisines), b / w écran noir / blanc, numéro + Entrée. Impression
+  (`ui/printing.py`) : Gtk.PrintOperation, `render_for_printing` (vectoriel), quart de tour si l'orientation
+  du papier diffère ; `export_pdf` pour les tests.
+
+## Publication (comme Nausicaa)
+
+PPA `ppa:nourpon/calypso` (à créer par Tof sur Launchpad) : `tools/ppa.sh` chez Tof (noble puis resolute,
+puis le site par `tools/site.sh`, dossier Calypso des pages perso Free). Nouvelle version : version dans
+`calypso/__init__.py`, `debian/calypso.1`, `<release>` de la fiche AppStream, entrée de `debian/changelog`
+(« X~noble1 », date RÉELLE — `date -R`), commit « Version X » sur main : `.github/workflows/release-deb.yml`
+publie le .deb dans les Releases — SEULEMENT pour un commit dont le message commence par « Version »
+(un changelog préparé à l'avance ne publie rien). Site : `site/index.html` (anglais, tons turquoise ;
+Odysseus bleu, Ithaca violet, Nausicaa orange), captures de `site/img/` en anglais (`LANGUAGE=en`, sombre
+sauf light.png), captures du README dans `docs/captures/` en français. Version dans la pastille et
+l'accroche du site : à tenir à jour. Paquet vérifié ici : dpkg-buildpackage, lintian, appstreamcli.
 
 ## Tests
 

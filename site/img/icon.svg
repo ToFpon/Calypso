@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2ec4b6"/>
+      <stop offset="1" stop-color="#0e7c86"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e8eef0"/>
+    </linearGradient>
+    <clipPath id="page">
+      <path d="M28 12h50l26 26v74a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6V18a6 6 0 0 1 6-6z"/>
+    </clipPath>
+  </defs>
+  <path d="M28 14h50l26 26v74a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z" fill="#000" opacity=".18"/>
+  <path d="M28 12h50l26 26v74a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6V18a6 6 0 0 1 6-6z" fill="url(#paper)"/>
+  <g clip-path="url(#page)">
+    <path d="M10 86c12-8 22-8 34 0s22 8 34 0 22-8 34 0v40H10z" fill="url(#sea)"/>
+    <path d="M10 98c12-7 22-7 34 0s22 7 34 0 22-7 34 0v30H10z" fill="#0b5f6b" opacity=".55"/>
+  </g>
+  <path d="M78 12v20a6 6 0 0 0 6 6h20z" fill="#c9d6da"/>
+  <g fill="#8aa1a8">
+    <rect x="34" y="34" width="34" height="5" rx="2.5"/>
+    <rect x="34" y="46" width="58" height="5" rx="2.5"/>
+    <rect x="34" y="58" width="58" height="5" rx="2.5"/>
+    <rect x="34" y="70" width="40" height="5" rx="2.5"/>
+  </g>
+</svg>

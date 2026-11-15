@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calypso — PDF viewer for GNOME</title>
+<meta name="description" content="Calypso reads PDF documents like GNOME Papers, annotates them, fills in forms, checks signatures, and brings tools to organize, merge, compress, watermark, redact and protect them.">
+<link rel="icon" href="img/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#071314;
+    --surface:#0d1d1f;
+    --surface-2:#12282a;
+    --line:rgba(255,255,255,.08);
+    --line-strong:rgba(255,255,255,.14);
+    --text:#eef8f7;
+    --text-dim:rgba(238,248,247,.64);
+    --text-faint:rgba(238,248,247,.40);
+    --teal:#2ec4b6;
+    --teal-bright:#7ee8dd;
+    --teal-deep:#0e7c86;
+    --sea:#0b5f6b;
+    --green:#4ade80;
+    --display:'Space Grotesk',sans-serif;
+    --body:'Inter',sans-serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--body);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  ::selection{background:var(--teal);color:#04201f}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(14px);background:rgba(7,19,20,.75);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:600;font-size:1.05rem}
+  .brand img{width:30px;height:30px}
+  .nav-links{display:flex;gap:26px;font-size:.92rem}
+  .nav-links a{color:var(--text-dim);transition:color .2s}
+  .nav-links a:hover{color:var(--text)}
+  .get-pill{font-family:var(--mono);font-size:.74rem;color:var(--green);border:1px solid rgba(74,222,128,.35);background:rgba(74,222,128,.08);padding:6px 14px;border-radius:999px;white-space:nowrap}
+  @media (max-width:720px){.nav-links{display:none}}
+
+  header.hero{padding:150px 0 70px;text-align:center;background:
+      radial-gradient(900px 420px at 50% -10%,rgba(46,196,182,.22),transparent 70%),
+      linear-gradient(180deg,#0a1b1d,var(--bg) 70%)}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.78rem;color:var(--teal-bright);border:1px solid rgba(126,232,221,.3);background:rgba(46,196,182,.08);padding:6px 14px;border-radius:999px;margin-bottom:28px}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(2.4rem,6vw,4.4rem);line-height:1.03;letter-spacing:-.03em;margin-bottom:22px}
+  h1 .accent{background:linear-gradient(120deg,var(--teal-bright),var(--teal) 55%,#38bdf8);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:clamp(1.05rem,2vw,1.24rem);color:var(--text-dim);max-width:700px;margin:0 auto 36px}
+  .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:56px}
+  .btn{font-weight:600;font-size:.96rem;padding:13px 26px;border-radius:12px;display:inline-flex;align-items:center;gap:9px;border:1px solid transparent;transition:all .2s}
+  .btn-primary{background:linear-gradient(120deg,var(--teal-bright),var(--teal));color:#04201f;box-shadow:0 10px 30px -10px rgba(46,196,182,.7)}
+  .btn-primary:hover{transform:translateY(-1px)}
+  .btn-ghost{border-color:var(--line-strong)}
+  .btn-ghost:hover{border-color:var(--teal);background:rgba(46,196,182,.1)}
+  .shot{border-radius:14px;overflow:hidden;border:1px solid var(--line-strong);box-shadow:0 40px 90px -30px rgba(0,0,0,.8),0 0 0 1px rgba(46,196,182,.08)}
+  .hero .shot{max-width:980px;margin:0 auto}
+
+  section{padding:90px 0}
+  .kicker{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+  h2{font-family:var(--display);font-weight:700;font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:-.02em;margin:10px 0 14px}
+  .sub{color:var(--text-dim);max-width:640px;margin-bottom:44px}
+
+  .row{display:grid;grid-template-columns:1fr 1.25fr;gap:48px;align-items:center;margin-bottom:80px}
+  .row.flip{grid-template-columns:1.25fr 1fr}
+  .row.flip .text{order:2}
+  .row h3{font-family:var(--display);font-size:1.5rem;margin-bottom:12px}
+  .row p{color:var(--text-dim);margin-bottom:14px}
+  .row ul{list-style:none;color:var(--text-dim)}
+  .row li{padding-left:22px;position:relative;margin:6px 0}
+  .row li::before{content:"";position:absolute;left:0;top:.62em;width:8px;height:8px;border-radius:2px;background:var(--teal)}
+  @media (max-width:860px){.row,.row.flip{grid-template-columns:1fr}.row.flip .text{order:0}}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px}
+  .card h4{font-family:var(--display);font-size:1.08rem;margin-bottom:8px}
+  .card p{color:var(--text-dim);font-size:.93rem}
+  .card .ico{width:38px;height:38px;border-radius:10px;background:rgba(46,196,182,.12);color:var(--teal-bright);display:grid;place-items:center;margin-bottom:14px;font-family:var(--mono);font-weight:600}
+
+  .install{background:linear-gradient(180deg,var(--bg),#0a1b1d)}
+  .term{background:#030a0b;border:1px solid var(--line-strong);border-radius:12px;padding:22px 24px;font-family:var(--mono);font-size:.92rem;position:relative;overflow-x:auto;margin-bottom:20px}
+  .term .p{color:var(--teal)}
+  .copy{position:absolute;top:12px;right:12px;font-family:var(--body);font-size:.8rem;color:var(--text-dim);border:1px solid var(--line-strong);background:var(--surface);padding:5px 12px;border-radius:8px;cursor:pointer}
+  .copy:hover{color:var(--text);border-color:var(--teal)}
+  .note{color:var(--text-faint);font-size:.9rem}
+  .note code{font-family:var(--mono);color:var(--text-dim)}
+
+  footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-faint);font-size:.88rem}
+  footer .wrap{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  footer a{color:var(--text-dim)}
+  footer a:hover{color:var(--text)}
+</style>
+</head>
+<body>
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#"><img src="img/icon.svg" alt="">Calypso</a>
+    <div class="nav-links">
+      <a href="#reading">Reading</a>
+      <a href="#annotate">Annotate</a>
+      <a href="#tools">Tools</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/ToFpon/Calypso">GitHub</a>
+    </div>
+    <span class="get-pill">v0.4.0 · GPL-3.0</span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow"><span class="dot"></span>Version 0.4.0 — for Ubuntu 24.04, Zorin OS 18, Debian 13</span>
+    <h1>Read your PDFs.<br><span class="accent">Change them too.</span></h1>
+    <p class="lede">Calypso reads documents like GNOME Papers — same engine, Poppler — then lets you annotate them,
+      fill in forms, check and add signatures, and organize, merge, compress, watermark, redact or protect them.
+      Native GTK4 and libadwaita, following your desktop theme.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="#install">Install Calypso</a>
+      <a class="btn btn-ghost" href="https://github.com/ToFpon/Calypso">Source code</a>
+    </div>
+    <div class="shot"><img src="img/dark.png" alt="Calypso showing a document with its outline, dark theme" width="1090" height="790"></div>
+  </div>
+</header>
+
+<section id="reading">
+  <div class="wrap">
+    <span class="kicker">Reading</span>
+    <h2>Everything Papers does, and it remembers</h2>
+    <p class="sub">Each document reopens at the page, zoom and layout you left it with. The welcome page shows your
+      recent documents; a small cross on hover removes one from the list.</p>
+    <div class="row">
+      <div class="text">
+        <h3>Find, select, follow</h3>
+        <ul>
+          <li>Search ignores accents and case, results listed in the sidebar</li>
+          <li>Continuous or page by page, two pages side by side, zoom with Ctrl + wheel</li>
+          <li>Thumbnails, outline, links with a preview on hover, history back and forward</li>
+          <li>Rotation, night mode, full screen, presentation mode (F5), printing</li>
+          <li>Password-protected documents, automatic reload when the file changes</li>
+        </ul>
+      </div>
+      <div class="shot"><img src="img/search.png" alt="Search results highlighted and listed in the sidebar" loading="lazy"></div>
+    </div>
+    <div class="row flip">
+      <div class="text">
+        <h3>Your theme, light or dark</h3>
+        <p>No colours of its own: Calypso follows Adwaita, your accent colour and your GTK4 theme.</p>
+      </div>
+      <div class="shot"><img src="img/light.png" alt="Calypso in the light theme" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<section id="annotate" style="background:var(--surface)">
+  <div class="wrap">
+    <span class="kicker">Annotate · Forms · Signatures</span>
+    <h2>Write on the document</h2>
+    <p class="sub">Annotations and filled-in fields are saved into the PDF itself, readable by any other viewer.
+      Ctrl+Z undoes, Ctrl+S saves — safely, never a half-written file.</p>
+    <div class="row">
+      <div class="text">
+        <h3>Annotations</h3>
+        <ul>
+          <li>Notes, highlight, underline, strike out, squiggly underline</li>
+          <li>Rectangles and ellipses, six colours</li>
+          <li>Comment on any annotation, list them all in the sidebar</li>
+        </ul>
+      </div>
+      <div class="shot"><img src="img/annotate.png" alt="Highlights, underline, ellipse and a note, listed in the sidebar" loading="lazy"></div>
+    </div>
+    <div class="row flip">
+      <div class="text">
+        <h3>Forms and signatures</h3>
+        <ul>
+          <li>Text fields typed right on the page, check boxes, radio buttons, lists</li>
+          <li>Signatures checked when the document opens</li>
+          <li>Sign with your certificate (.p12 / .pfx import, or the certificates of Firefox)</li>
+        </ul>
+      </div>
+      <div class="shot"><img src="img/form.png" alt="A form being filled in" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<section id="tools">
+  <div class="wrap">
+    <span class="kicker">Tools</span>
+    <h2>The PDF tools of Odysseus, built in</h2>
+    <p class="sub">The same engine as the Odysseus file manager (qpdf, Ghostscript). Results are written next to the
+      document — never over an existing file.</p>
+    <div class="row">
+      <div class="text">
+        <h3>Organize pages</h3>
+        <p>Drag thumbnails to change the order, rotate, duplicate, delete, extract, split. Apply to the document,
+          with Undo.</p>
+      </div>
+      <div class="shot"><img src="img/organize.png" alt="Page organizer with thumbnails" loading="lazy"></div>
+    </div>
+    <div class="row flip">
+      <div class="text">
+        <h3>Watermark</h3>
+        <p>Text or image, font, colour, opacity, angle, position, chosen pages — with a live preview. Flatten it
+          so it cannot be removed.</p>
+      </div>
+      <div class="shot"><img src="img/watermark.png" alt="Watermark dialog with preview" loading="lazy"></div>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="ico">⇄</div><h4>Merge</h4><p>Add other PDFs, set the order and the pages to keep from each.</p></div>
+      <div class="card"><div class="ico">↓</div><h4>Compress</h4><p>Ghostscript, four quality levels, grayscale option. Nothing written if it would not be smaller.</p></div>
+      <div class="card"><div class="ico">■</div><h4>Redact</h4><p>Draw the areas to hide: the text underneath is gone from the file, not just covered.</p></div>
+      <div class="card"><div class="ico">🔒</div><h4>Protect</h4><p>AES-256 password, print / copy / edit permissions, strong password generator. Remove it as easily.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="install" class="install">
+  <div class="wrap">
+    <span class="kicker">Install</span>
+    <h2>Two commands</h2>
+    <p class="sub">Ubuntu 24.04 / 26.04, Zorin OS 18, Linux Mint 22 — updates then come with the system's.</p>
+    <div class="term"><button class="copy" data-copy="sudo add-apt-repository ppa:nourpon/calypso
+sudo apt update && sudo apt install calypso">Copy</button><span class="p">$</span> sudo add-apt-repository ppa:nourpon/calypso<br><span class="p">$</span> sudo apt update &amp;&amp; sudo apt install calypso</div>
+    <p class="note">Other Debian-based distributions (Debian 13…): download <code>calypso_X_all.deb</code> from the
+      <a href="https://github.com/ToFpon/Calypso/releases" style="color:var(--teal)">releases</a>, then
+      <code>sudo apt install ./calypso_X_all.deb</code>.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Calypso — free software, GPL-3.0 · by Tof</span>
+    <span><a href="https://github.com/ToFpon/Calypso">GitHub</a> · <a href="https://launchpad.net/~nourpon/+archive/ubuntu/calypso">Launchpad</a> · also <a href="https://tofmicro.pages-perso.free.fr/Odysseus/">Odysseus</a>, <a href="https://tofmicro.pages-perso.free.fr/Nausicaa/">Nausicaa</a></span>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll(".copy").forEach(b => b.addEventListener("click", () => {
+    navigator.clipboard.writeText(b.dataset.copy).then(() => {
+      const t = b.textContent; b.textContent = "Copied"; setTimeout(() => b.textContent = t, 1600);
+    });
+  }));
+</script>
+</body>
+</html>

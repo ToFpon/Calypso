@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.calypso.Calypso</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Calypso</name>
+  <summary>Read PDF documents, and the tools to change them</summary>
+  <summary xml:lang="fr">Lire les documents PDF, avec les outils pour les modifier</summary>
+  <summary xml:lang="de">PDF-Dokumente lesen, mit den Werkzeugen, um sie zu ändern</summary>
+  <developer id="io.github.calypso">
+    <name>Tof</name>
+  </developer>
+  <description>
+    <p>
+      Calypso is a PDF document viewer for GNOME. It reads documents like GNOME Papers (same engine,
+      Poppler), annotates them, fills in forms and checks signatures, and brings the PDF tools of the
+      Odysseus file manager. It follows the desktop theme.
+    </p>
+    <p xml:lang="fr">
+      Calypso est une visionneuse de documents PDF pour GNOME. Elle lit les documents comme Papers (même
+      moteur, Poppler), les annote, remplit les formulaires et vérifie les signatures, et apporte les
+      outils PDF du gestionnaire de fichiers Odysseus. Elle suit le thème du bureau.
+    </p>
+    <p xml:lang="de">
+      Calypso ist ein PDF-Dokumentenbetrachter für GNOME. Er liest Dokumente wie GNOME Papers (gleiche
+      Engine, Poppler), kommentiert sie, füllt Formulare aus, prüft Signaturen und bringt die
+      PDF-Werkzeuge des Dateimanagers Odysseus mit. Er folgt dem Thema der Arbeitsumgebung.
+    </p>
+    <ul>
+      <li>Continuous or page-by-page scrolling, two pages side by side, zoom, rotation, night mode, presentation mode</li>
+      <li>Thumbnails, outline, search with a list of results, links with a preview, printing</li>
+      <li>Annotations: notes, highlight, underline, strike out, shapes; forms; saved into the file</li>
+      <li>Digital signatures: checked, and added with your certificate</li>
+      <li>Organize pages by dragging thumbnails, merge, compress, watermark, redact, protect with a password</li>
+      <li>Each document reopens at its page, zoom and layout; recent documents on the welcome page</li>
+    </ul>
+    <ul xml:lang="fr">
+      <li>Défilement continu ou page par page, deux pages côte à côte, zoom, rotation, mode nuit, présentation</li>
+      <li>Miniatures, sommaire, recherche avec la liste des résultats, liens avec aperçu, impression</li>
+      <li>Annotations : notes, surligner, souligner, barrer, formes ; formulaires ; enregistrés dans le fichier</li>
+      <li>Signatures numériques : vérifiées, et ajoutées avec votre certificat</li>
+      <li>Organiser les pages en glissant les miniatures, fusionner, compresser, filigrane, caviarder, protéger par un mot de passe</li>
+      <li>Chaque document rouvre à sa page, son zoom et sa disposition ; documents récents à l'accueil</li>
+    </ul>
+    <ul xml:lang="de">
+      <li>Fortlaufend oder seitenweise, zwei Seiten nebeneinander, Zoom, Drehung, Nachtmodus, Präsentation</li>
+      <li>Vorschaubilder, Inhaltsverzeichnis, Suche mit Trefferliste, Links mit Vorschau, Drucken</li>
+      <li>Anmerkungen: Notizen, Hervorheben, Unterstreichen, Durchstreichen, Formen; Formulare; in der Datei gespeichert</li>
+      <li>Digitale Signaturen: geprüft und mit Ihrem Zertifikat hinzugefügt</li>
+      <li>Seiten per Ziehen ordnen, zusammenfügen, komprimieren, Wasserzeichen, schwärzen, mit Passwort schützen</li>
+      <li>Jedes Dokument öffnet sich wieder mit Seite, Zoom und Anordnung; zuletzt geöffnete Dokumente auf der Startseite</li>
+    </ul>
+  </description>
+  <url type="homepage">https://github.com/ToFpon/Calypso</url>
+  <url type="vcs-browser">https://github.com/ToFpon/Calypso</url>
+  <url type="bugtracker">https://github.com/ToFpon/Calypso/issues</url>
+  <launchable type="desktop-id">io.github.calypso.Calypso.desktop</launchable>
+  <categories>
+    <category>Office</category>
+    <category>Viewer</category>
+  </categories>
+  <keywords>
+    <keyword>pdf</keyword>
+    <keyword>document</keyword>
+    <keyword>viewer</keyword>
+    <keyword>annotation</keyword>
+  </keywords>
+  <provides>
+    <binary>calypso</binary>
+    <mediatype>application/pdf</mediatype>
+  </provides>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.4.0" date="2026-11-15">
+      <description>
+        <p>First release.</p>
+        <ul>
+          <li>Reading: continuous or page-by-page scrolling, two pages, zoom, rotation, night mode, full screen, presentation mode (F5), thumbnails, outline, search, text selection, links with preview, printing, password-protected documents, automatic reload, reading resumed, recent documents</li>
+          <li>Annotations (notes, highlight, underline, strike out, shapes), forms, saved into the file</li>
+          <li>Digital signatures: checked, signed with a certificate, .p12 / .pfx import</li>
+          <li>Tools: organize pages, merge, compress, watermark, redact, protect with a password</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+</component>

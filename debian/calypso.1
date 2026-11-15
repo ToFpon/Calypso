@@ -1,0 +1,39 @@
+.TH CALYPSO 1 "November 2026" "Calypso 0.4.0" "User Commands"
+.SH NAME
+calypso \- PDF document viewer for GNOME
+.SH SYNOPSIS
+.B calypso
+[\fIOPTION\fR] [\fIFILE\fR...]
+.SH DESCRIPTION
+Calypso reads PDF documents, annotates them, fills in forms, checks and adds
+digital signatures, and offers tools to organize pages, merge, compress,
+watermark, redact and protect documents with a password. Each document opens
+in its own window; a document that is already open comes back to the front.
+If Calypso is already running, the files are sent to the running instance.
+.SH OPTIONS
+.TP
+.BR \-p ", " \-\-page =\fIPAGE\fR
+Open at this page (number or page label).
+.TP
+.BR \-w ", " \-\-new\-window
+Open a new window.
+.TP
+.BR \-v ", " \-\-version
+Print the version and exit.
+.SH FILES
+.TP
+.I ~/.config/calypso/settings.json
+Preferences.
+.TP
+.I ~/.local/share/calypso/history.json
+Recent documents, and the page, zoom and layout of each one.
+.TP
+.I ~/.cache/calypso/
+Thumbnails of recent documents; copies kept for "Undo" after organizing pages.
+.SH ENVIRONMENT
+.TP
+.B CALYPSO_NSS_DIR
+Certificate database used for digital signatures (default: the Firefox profile,
+otherwise ~/.pki/nssdb).
+.SH AUTHOR
+Tof <nourpon@gmail.com>

@@ -381,8 +381,13 @@ class Sidebar(Gtk.Box):
         self.search = search
         visible = search is not None and bool(search.query)
         self._buttons["results"].set_visible(visible)
-        if not visible and self.current_page() == "results":
-            self.show_page("thumbnails")
+        if visible:
+            # comme Papers : la liste des résultats s'affiche ; on reviendra au panneau d'avant
+            if self.current_page() != "results":
+                self._before_results = self.current_page()
+                self.show_page("results")
+        elif self.current_page() == "results":
+            self.show_page(getattr(self, "_before_results", "thumbnails") or "thumbnails")
 
     def add_results(self, page: int, rects: list, contexts: list):
         doc = self.view.document
@@ -393,7 +398,10 @@ class Sidebar(Gtk.Box):
             box = Gtk.Box(spacing=8, margin_top=4, margin_bottom=4)
             label = Gtk.Label(xalign=0, hexpand=True, wrap=True, lines=2, ellipsize=Pango.EllipsizeMode.END,
                               wrap_mode=Pango.WrapMode.WORD_CHAR)
-            label.set_markup(GLib.markup_escape_text(shown(before[-30:])) + "<b>"
+            lead = before[-30:]
+            if len(before) > 30 and " " in lead:          # extrait coupé sur un mot entier
+                lead = "…" + lead[lead.index(" ") + 1:]
+            label.set_markup(GLib.markup_escape_text(shown(lead)) + "<b>"
                              + GLib.markup_escape_text(shown(match)) + "</b>"
                              + GLib.markup_escape_text(shown(after[:40])))
             box.append(label)

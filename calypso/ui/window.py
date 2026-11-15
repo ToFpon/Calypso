@@ -159,7 +159,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.annotate_btn = Gtk.ToggleButton(icon_name="document-edit-symbolic", action_name="win.annotate",
                                              tooltip_text=tr("Annoter"))
         self.header.pack_end(self.annotate_btn)
-        self.tools_btn = Gtk.MenuButton(icon_name="applications-utilities-symbolic", tooltip_text=tr("Outils"),
+        self.tools_btn = Gtk.MenuButton(icon_name="calypso-tools-symbolic", tooltip_text=tr("Outils"),
                                         menu_model=self._tools_menu())
         self.header.pack_end(self.tools_btn)
 

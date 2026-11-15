@@ -36,6 +36,8 @@ class CalypsoApp(Adw.Application):
     def do_startup(self):
         Adw.Application.do_startup(self)
         display = Gdk.Display.get_default()
+        if display is None:              # « calypso --version » sans écran (ssh) : rien à dessiner
+            return
         css = Gtk.CssProvider()
         css.load_from_path(os.path.join(DATA_DIR, "base.css"))
         Gtk.StyleContext.add_provider_for_display(display, css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
