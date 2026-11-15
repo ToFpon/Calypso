@@ -149,7 +149,15 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
 
 ## Publication (comme Nausicaa)
 
-PPA `ppa:nourpon/calypso` (à créer par Tof sur Launchpad) : `tools/ppa.sh` chez Tof (noble puis resolute,
+Nom du PAQUET et de la COMMANDE : `calypso-pdf` (depuis 1.0.1). Ubuntu / Debian ont déjà un paquet
+« calypso » (serveur CalDAV : /usr/bin/calypso, calypso.1, module Python `calypso` dans dist-packages) en
+version 2.1, qu'apt installait à la place de la 1.0.0 (vu chez Tof). L'application reste « Calypso »
+(menu, fenêtre, site), identifiant io.github.calypso.Calypso et réglages inchangés ; code privé dans
+/usr/share/calypso-pdf (notre lanceur le met en tête des chemins d'import : le module `calypso` du serveur,
+s'il est installé, n'est jamais pris). Vérifier qu'un nom est libre AVANT de publier (packages.ubuntu.com,
+`apt-cache policy NOM`).
+
+PPA `ppa:nourpon/calypso` (créé par Tof) : `tools/ppa.sh` chez Tof (noble puis resolute,
 puis le site par `tools/site.sh`, dossier Calypso des pages perso Free). Nouvelle version : version dans
 `calypso/__init__.py`, `debian/calypso.1`, `<release>` de la fiche AppStream, entrée de `debian/changelog`
 (« X~noble1 », date RÉELLE — `date -R`), commit « Version X » sur main : `.github/workflows/release-deb.yml`

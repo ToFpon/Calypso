@@ -45,10 +45,10 @@ file manager. It follows your desktop theme (Adwaita, light or dark, accent colo
 Ubuntu 24.04 / 26.04, Zorin OS 18, Linux Mint 22:
 ```sh
 sudo add-apt-repository ppa:nourpon/calypso
-sudo apt update && sudo apt install calypso
+sudo apt update && sudo apt install calypso-pdf
 ```
 Other Debian-based distributions: the `.deb` of the [releases](https://github.com/ToFpon/Calypso/releases),
-then `sudo apt install ./calypso_X_all.deb`. From the source code: `./install.sh` (in `~/.local`).
+then `sudo apt install ./calypso-pdf_X_all.deb`. From the source code: `./install.sh` (in `~/.local`).
 
 ---
 
@@ -81,9 +81,9 @@ couleur d'accent, thème GTK4 installé).
 Ubuntu 24.04 / 26.04, Zorin OS 18, Linux Mint 22 :
 ```sh
 sudo add-apt-repository ppa:nourpon/calypso
-sudo apt update && sudo apt install calypso
+sudo apt update && sudo apt install calypso-pdf
 ```
 Autres distributions basées sur Debian : le `.deb` des [releases](https://github.com/ToFpon/Calypso/releases),
-puis `sudo apt install ./calypso_X_all.deb`. Depuis le code : `./install.sh` (dans `~/.local`).
+puis `sudo apt install ./calypso-pdf_X_all.deb`. Depuis le code : `./install.sh` (dans `~/.local`).
 
 License: GPL-3.0.

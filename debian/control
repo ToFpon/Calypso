@@ -1,4 +1,4 @@
-Source: calypso
+Source: calypso-pdf
 Section: graphics
 Priority: optional
 Maintainer: Tof <nourpon@gmail.com>
@@ -9,7 +9,7 @@ Vcs-Browser: https://github.com/ToFpon/Calypso
 Vcs-Git: https://github.com/ToFpon/Calypso.git
 Rules-Requires-Root: no
 
-Package: calypso
+Package: calypso-pdf
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends}, python3 (>= 3.10), python3-gi, python3-gi-cairo, python3-cairo,
  gir1.2-gtk-4.0 (>= 4.14), gir1.2-adw-1 (>= 1.5), gir1.2-glib-2.0, gir1.2-poppler-0.18, gir1.2-pango-1.0, qpdf

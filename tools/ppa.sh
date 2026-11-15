@@ -41,13 +41,13 @@ fi
 OUT=$(mktemp -d)
 for S in $SERIES; do
     V=$(echo "$VERSION" | sed "s/~$FIRST/~$S/")
-    DIR="$OUT/$S/calypso-$V"
+    DIR="$OUT/$S/calypso-pdf-$V"
     mkdir -p "$DIR"
     git archive HEAD | tar -x -C "$DIR"
     # même entrée, autre version d'Ubuntu (« 1.5.2~noble1) noble; » → « 1.5.2~resolute1) resolute; »)
     sed -i "1s/($VERSION) $FIRST;/($V) $S;/" "$DIR/debian/changelog"
     (cd "$DIR" && debuild -S -d)       # signé avec la clé GPG du changelog
-    lintian "$OUT/$S/calypso_${V}_source.changes" || true
+    lintian "$OUT/$S/calypso-pdf_${V}_source.changes" || true
 done
 if [ "$1" = "--build" ]; then
     echo "Paquets source signés dans $OUT (rien n'a été envoyé)."
@@ -55,7 +55,7 @@ if [ "$1" = "--build" ]; then
 fi
 for S in $SERIES; do
     V=$(echo "$VERSION" | sed "s/~$FIRST/~$S/")
-    dput "$PPA" "$OUT/$S/calypso_${V}_source.changes"
+    dput "$PPA" "$OUT/$S/calypso-pdf_${V}_source.changes"
 done
 echo "Envoyé ($SERIES). Launchpad les construit en quelques minutes : https://launchpad.net/~nourpon/+archive/ubuntu/calypso/+packages"
 

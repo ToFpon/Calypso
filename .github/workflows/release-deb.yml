@@ -40,8 +40,8 @@ jobs:
       - name: Construction
         run: |
           dpkg-buildpackage -us -uc -b
-          lintian ../calypso_*_all.deb || true
-          cp ../calypso_*_all.deb "calypso_${BASE}_all.deb"
+          lintian ../calypso-pdf_*_all.deb || true
+          cp ../calypso-pdf_*_all.deb "calypso-pdf_${BASE}_all.deb"
 
       - name: Notes (fiche AppStream, en anglais)
         run: |
@@ -55,9 +55,9 @@ jobs:
           print()
           print("**Ubuntu 24.04 / 26.04, Zorin OS 18, Linux Mint 22:** prefer the PPA, updates then come "
                 "with the system's:")
-          print("```\nsudo add-apt-repository ppa:nourpon/calypso\nsudo apt update && sudo apt install calypso\n```")
+          print("```\nsudo add-apt-repository ppa:nourpon/calypso\nsudo apt update && sudo apt install calypso-pdf\n```")
           print("**Other Debian-based distributions (Debian 13…):** download the .deb below, then:")
-          print(f"```\nsudo apt install ./calypso_{base}_all.deb\n```")
+          print(f"```\nsudo apt install ./calypso-pdf_{base}_all.deb\n```")
           PY
           cat notes.md
 
@@ -67,8 +67,8 @@ jobs:
         run: |
           TAG="v$BASE"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "calypso_${BASE}_all.deb" --clobber
+            gh release upload "$TAG" "calypso-pdf_${BASE}_all.deb" --clobber
           else
-            gh release create "$TAG" "calypso_${BASE}_all.deb" --target "$GITHUB_SHA" \
+            gh release create "$TAG" "calypso-pdf_${BASE}_all.deb" --target "$GITHUB_SHA" \
               --title "Calypso $BASE" --notes-file notes.md
           fi

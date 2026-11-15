@@ -12,7 +12,7 @@ APP_ID="io.github.calypso.Calypso"
 DESKTOP="$APP_ID.desktop"
 
 if [ "$1" = "--uninstall" ]; then
-    rm -rf "$APPDIR" "$PREFIX/bin/calypso" "$SHARE/applications/$DESKTOP" \
+    rm -rf "$APPDIR" "$PREFIX/bin/calypso-pdf" "$SHARE/applications/$DESKTOP" \
         "$SHARE/icons/hicolor/scalable/apps/$APP_ID.svg" \
         "$SHARE/icons/hicolor/symbolic/apps/$APP_ID-symbolic.svg"
     update-desktop-database "$SHARE/applications" 2>/dev/null || true
@@ -23,8 +23,8 @@ if [ "$1" = "--uninstall" ]; then
     exit 0
 fi
 
-if [ -d /usr/share/calypso ]; then
-    echo "Attention : le paquet calypso (PPA) est déjà installé. Cette installation dans ~/.local"
+if [ -d /usr/share/calypso-pdf ]; then
+    echo "Attention : le paquet calypso-pdf (PPA) est déjà installé. Cette installation dans ~/.local"
     echo "passera devant lui ; pour revenir au paquet : ./install.sh --uninstall"
 fi
 
@@ -48,19 +48,22 @@ mkdir -p "$APPDIR" "$PREFIX/bin" "$SHARE/applications" "$SHARE/icons/hicolor/sca
 rm -rf "$APPDIR/calypso" "$APPDIR/data"
 cp -r "$SRC/calypso" "$SRC/data" "$APPDIR/"
 find "$APPDIR" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
-cat > "$PREFIX/bin/calypso" <<LAUNCH
+# commande « calypso-pdf » : « calypso » est déjà celle d'un serveur CalDAV d'Ubuntu / Debian
+# celle d'une installation d'avant le renommage, seulement si c'est bien la nôtre
+if grep -qs "calypso.app import main" "$PREFIX/bin/calypso"; then rm -f "$PREFIX/bin/calypso"; fi
+cat > "$PREFIX/bin/calypso-pdf" <<LAUNCH
 #!/bin/sh
 # -P : pas de dossier courant dans les chemins d'import (un dossier supprimé faisait planter le
 # démarrage, et un « gi.py » posé dans le dossier courant aurait été exécuté)
 exec python3 -P -c 'import sys; sys.path.insert(0, "$APPDIR"); from calypso.app import main; sys.exit(main(sys.argv))' "\$@"
 LAUNCH
-chmod +x "$PREFIX/bin/calypso"
-sed "s|^Exec=calypso|Exec=$PREFIX/bin/calypso|" "$SRC/data/$DESKTOP" > "$SHARE/applications/$DESKTOP"
+chmod +x "$PREFIX/bin/calypso-pdf"
+sed "s|^Exec=calypso-pdf|Exec=$PREFIX/bin/calypso-pdf|" "$SRC/data/$DESKTOP" > "$SHARE/applications/$DESKTOP"
 cp "$SRC/data/icons/hicolor/scalable/apps/$APP_ID.svg" "$SHARE/icons/hicolor/scalable/apps/"
 cp "$SRC/data/icons/hicolor/symbolic/apps/$APP_ID-symbolic.svg" "$SHARE/icons/hicolor/symbolic/apps/"
 update-desktop-database "$SHARE/applications" 2>/dev/null || true
 gtk-update-icon-cache -f -t "$SHARE/icons/hicolor" 2>/dev/null || true
 
-echo "Calypso est installé. Lancez-le depuis le menu des applications ou avec : calypso"
+echo "Calypso est installé. Lancez-le depuis le menu des applications ou avec : calypso-pdf"
 echo "Pour en faire la visionneuse PDF par défaut : xdg-mime default $DESKTOP application/pdf"
 case ":$PATH:" in *":$PREFIX/bin:"*) ;; *) echo "Astuce : ajoutez $PREFIX/bin à votre PATH." ;; esac

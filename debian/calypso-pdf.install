@@ -1,4 +1,4 @@
-debian/bin/calypso usr/bin
+debian/bin/calypso-pdf usr/bin
 data/io.github.calypso.Calypso.desktop usr/share/applications
 data/io.github.calypso.Calypso.metainfo.xml usr/share/metainfo
 data/icons/hicolor/scalable/apps/io.github.calypso.Calypso.svg usr/share/icons/hicolor/scalable/apps

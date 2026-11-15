@@ -1,3 +1,12 @@
+calypso-pdf (1.0.1~noble1) noble; urgency=medium
+
+  * Paquet renommé « calypso-pdf », et sa commande aussi : Ubuntu et Debian
+    ont déjà un paquet « calypso » (un serveur d'agendas), qu'apt
+    choisissait à la place de la visionneuse. Dans le menu des
+    applications, l'application s'appelle toujours Calypso.
+
+ -- Tof <nourpon@gmail.com>  Sun, 15 Nov 2026 15:35:22 +0000
+
 calypso (1.0.0~noble1) noble; urgency=medium
 
   * Première version publiée : visionneuse PDF pour GNOME sur Poppler.
