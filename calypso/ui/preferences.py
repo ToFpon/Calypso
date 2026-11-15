@@ -10,6 +10,7 @@ from gi.repository import Adw, Gtk  # noqa: E402
 
 from .. import features  # noqa: E402
 from ..i18n import LANGUAGE_NAMES, tr  # noqa: E402
+from ..backend.document import default_author  # noqa: E402
 from ..settings import settings  # noqa: E402
 from .common import combo_row  # noqa: E402
 
@@ -62,6 +63,15 @@ class PreferencesWindow(Adw.PreferencesWindow):
         new.add(_switch(tr("Deux pages côte à côte"), "dual"))
         new.add(_switch(tr("Mode nuit"), "night", tr("Couleurs inversées : texte clair sur fond sombre")))
         page.add(new)
+        notes = Adw.PreferencesGroup(title=tr("Annotations"))
+        author = Adw.EntryRow(title=tr("Auteur des annotations"), text=settings["annot_author"],
+                              show_apply_button=True)
+        author.connect("apply", lambda r: settings.__setitem__("annot_author", r.get_text().strip()))
+        notes.add(author)
+        hint = Gtk.Label(label=tr("Vide : le nom de la session ({0})").format(default_author()), xalign=0,
+                         wrap=True, css_classes=["dim-label", "caption"], margin_top=6)
+        notes.add(hint)
+        page.add(notes)
         return page
 
     def _features(self) -> Adw.PreferencesPage:

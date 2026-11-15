@@ -17,7 +17,9 @@ def _groups():
         (tr("Document"), [
             ("<Control>o", tr("Ouvrir un document")),
             ("<Control>n", tr("Nouvelle fenêtre")),
-            ("<Control>s", tr("Enregistrer une copie")),
+            ("<Control>s", tr("Enregistrer")),
+            ("<Control><Shift>s", tr("Enregistrer sous")),
+            ("<Control>z <Control><Shift>z", tr("Annuler / rétablir (annotations, formulaires)")),
             ("<Control>r", tr("Recharger")),
             ("<Alt>Return", tr("Propriétés du document")),
             ("<Control>w", tr("Fermer la fenêtre")),
@@ -55,7 +57,7 @@ def shortcuts_window() -> Gtk.ShortcutsWindow:
     # une seule page (max-height) : sur deux, GTK 4.14 écrit « GtkLabel reported min width -4 »
     parts = ['<interface><object class="GtkShortcutsWindow" id="win"><property name="modal">1</property>'
              '<child><object class="GtkShortcutsSection"><property name="section-name">main</property>'
-             '<property name="max-height">18</property>']
+             '<property name="max-height">20</property>']
     for title, rows in _groups():
         parts.append(f'<child><object class="GtkShortcutsGroup"><property name="title">{escape(title)}</property>')
         for accel, text in rows:

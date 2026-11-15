@@ -13,6 +13,8 @@
   --dual, --night, --page=N, --rotate=90
   --prefs=PAGE      Préférences (general, features) posées au centre
   --properties      Propriétés du document
+  --annotate        barre d'annotation + quelques annotations (surlignage, note ouverte, ellipse)
+  --form            formulaire d'essai à moitié rempli
   --delay=MS        attente avant la capture (1500)
 """
 
@@ -67,6 +69,9 @@ def shot(win, delay):
         tex = win.get_renderer().render_texture(snapshot.to_node(), None)
         tex.save_to_png(out)
         print("capture", out, w, h)
+        for x in app.windows():              # pas de question « Enregistrer ? » pour une capture
+            if x.document is not None:
+                x.document.dirty = False
         app._quit()
         shutil.rmtree(TMP, ignore_errors=True)
         return False
@@ -77,6 +82,9 @@ def start():
     if args.get("dark"):
         Adw.StyleManager.get_default().set_color_scheme(Adw.ColorScheme.FORCE_DARK)
     pdf = args.get("file")
+    if args.get("form"):
+        pdf = os.path.join(TMP, "Inscription.pdf")
+        samples.make_form(pdf)
     if not pdf:
         pdf = os.path.join(TMP, "Le chant de Calypso.pdf")
         samples.make_book(pdf)
@@ -133,6 +141,34 @@ def start():
             d.present()
         if args.get("properties"):
             win.show_properties()
+        if args.get("annotate"):
+            win.activate_action("win.annotate", None)
+            an = win.annotator
+            v._set_selection((0, 60.0, 135.0), (0, 400.0, 175.0), "glyph")
+            an.markup("highlight")
+            an.color = (0.40, 0.70, 1.00)
+            v._set_selection((0, 60.0, 250.0), (0, 300.0, 262.0), "glyph")
+            an.markup("underline")
+            an.color = (0.90, 0.15, 0.15)
+            an.add_shape(0, "circle", (300.0, 370.0, 230.0, 70.0))
+            an.color = (0.98, 0.85, 0.18)
+
+            def note():
+                an.add_note(0, 470.0, 110.0)
+                if an._popover is not None:
+                    an._popover.text.get_buffer().set_text("Relire ce passage avant jeudi")
+                return False
+            GLib.timeout_add(400, note)
+        if args.get("form"):
+            doc, an = win.document, win.annotator
+            for f in doc.fields(0):
+                if f.name == "nom":
+                    an.set_field(f, "Tof")
+                elif f.name == "accepte":
+                    an.set_field(f, True)
+            nom = [f for f in doc.fields(0) if f.name == "remarques"]
+            if nom:
+                GLib.timeout_add(300, lambda: (an.activate_field(nom[0]), False)[1])
         shot(win, delay)
         return False
     GLib.timeout_add(100, ready)

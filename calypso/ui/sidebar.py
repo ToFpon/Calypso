@@ -74,6 +74,7 @@ class Sidebar(Gtk.Box):
         self.add_css_class("calypso-sidebar")
         self.view = view
         self._thumbs: dict = {}
+        self._thumb_dirty: set = set()
         self._bound: dict = {}               # cellule → page
         self._thumb_req = False
         self._syncing = False
@@ -88,8 +89,12 @@ class Sidebar(Gtk.Box):
         self._buttons: dict = {}
         self._add_page("thumbnails", "view-grid-symbolic", tr("Miniatures"), self._build_thumbs())
         self._add_page("outline", "view-list-bullet-symbolic", tr("Sommaire"), self._build_outline())
+        self._add_page("annots", "calypso-note-symbolic", tr("Annotations"), self._build_annots())
         self._add_page("results", "edit-find-symbolic", tr("Résultats de la recherche"), self._build_results())
         self._buttons["results"].set_visible(False)
+        self._annots_stale = True
+        self.stack.connect("notify::visible-child-name", lambda *_: self._maybe_refresh_annots())
+        view.connect("page-invalidated", self._on_page_invalidated)
 
     # -- pages ------------------------------------------------------------------------------------
     def _add_page(self, name, icon, title, child):
@@ -115,6 +120,7 @@ class Sidebar(Gtk.Box):
     # -- document -------------------------------------------------------------------------------
     def set_document(self, document):
         self._thumbs.clear()
+        self._thumb_dirty.clear()
         n = document.n_pages if document is not None else 0
         self.thumb_model.splice(0, self.thumb_model.get_n_items(), [str(i) for i in range(n)])
         outline = document.outline() if document is not None else []
@@ -126,6 +132,8 @@ class Sidebar(Gtk.Box):
         if not has and self.current_page() == "outline":
             self.show_page("thumbnails")
         self.set_results(None)
+        self._annots_stale = True
+        self._maybe_refresh_annots()
         if document is not None:
             self.select_page(self.view.page)
 
@@ -187,7 +195,7 @@ class Sidebar(Gtk.Box):
             reqs = []
             rot = self.view.rotation
             for page in sorted(set(self._bound.values())):
-                if (page, rot) in self._thumbs or page >= doc.n_pages:
+                if ((page, rot) in self._thumbs and page not in self._thumb_dirty) or page >= doc.n_pages:
                     continue
                 w, h = doc.size(page, rot)
                 tw = THUMB_W if h <= w * 3 else THUMB_W * 3 * w / h
@@ -202,6 +210,7 @@ class Sidebar(Gtk.Box):
         if texture is None or rot != self.view.rotation:
             return
         self._thumbs[(page, rot)] = texture
+        self._thumb_dirty.discard(page)
         for cell, p in self._bound.items():
             if p == page:
                 cell._thumb.queue_draw()
@@ -273,6 +282,60 @@ class Sidebar(Gtk.Box):
         row = self.outline_tree.get_item(pos)
         if row is not None:
             self.view.follow(row.get_item().item.link)
+
+    def _on_page_invalidated(self, _v, page):
+        self._thumb_dirty.add(page)          # l'ancienne miniature reste jusqu'à la nouvelle
+        self._request_thumbs()
+        self._annots_stale = True
+        self._maybe_refresh_annots()
+
+    # -- annotations ------------------------------------------------------------------------------
+    def _build_annots(self):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.annots_empty = Gtk.Label(label=tr("Aucune annotation"), css_classes=["dim-label"], margin_top=18,
+                                      wrap=True)
+        self.annots_list = Gtk.ListBox(css_classes=["navigation-sidebar"])
+        self.annots_list.connect("row-activated", self._annot_activated)
+        box.append(self.annots_empty)
+        box.append(Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=True, child=self.annots_list))
+        return box
+
+    def _maybe_refresh_annots(self):
+        if not self._annots_stale or self.current_page() != "annots":
+            return
+        self._annots_stale = False
+        from .annotations import kind_icon, kind_label
+        clear_box(self.annots_list)
+        doc = self.view.document
+        count = 0
+        if doc is not None:
+            for page in range(doc.n_pages):
+                for info in doc.annots(page):
+                    row = Gtk.ListBoxRow()
+                    row._info = info
+                    line = Gtk.Box(spacing=8, margin_top=4, margin_bottom=4)
+                    line.append(Gtk.Image(icon_name=kind_icon(info.kind), valign=Gtk.Align.START))
+                    texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True)
+                    first = info.contents.strip().splitlines()[0] if info.contents.strip() else kind_label(info.kind)
+                    texts.append(Gtk.Label(label=shown(first), xalign=0, ellipsize=Pango.EllipsizeMode.END))
+                    sub = tr("Page {0}").format(shown(doc.page_label(page)))
+                    if info.author:
+                        sub += " · " + shown(info.author)
+                    texts.append(Gtk.Label(label=sub, xalign=0, ellipsize=Pango.EllipsizeMode.END,
+                                           css_classes=["dim-label", "caption"]))
+                    line.append(texts)
+                    row.set_child(line)
+                    self.annots_list.append(row)
+                    count += 1
+        self.annots_empty.set_visible(count == 0)
+
+    def _annot_activated(self, _lb, row):
+        info = row._info
+        fresh = self.view.document.find_annot(info.annot) if self.view.document else None
+        if fresh is None:
+            return
+        self.view.go_to(fresh.page, max(0.0, fresh.rect[1] - 40), remember=True)
+        self.view.select_annot(fresh)
 
     # -- résultats de la recherche ----------------------------------------------------------------
     def _build_results(self):

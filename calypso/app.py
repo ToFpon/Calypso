@@ -129,10 +129,17 @@ class CalypsoApp(Adw.Application):
         return 0
 
     def _quit(self):
+        """Ctrl+Q : chaque fenêtre se ferme ; une fenêtre aux modifications non enregistrées pose sa
+        question, et l'application s'arrête d'elle-même avec la dernière fenêtre."""
+        pending = False
         for w in self.windows():
             w.save_state()
+            if w.document is not None and w.document.dirty:
+                pending = True
+                w.present()
             w.close()
-        self.quit()
+        if not pending:
+            self.quit()
 
     # -- fenêtres annexes ------------------------------------------------------------------------
     def _prefs(self):

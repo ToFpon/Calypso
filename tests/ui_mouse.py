@@ -13,6 +13,8 @@ import sys
 import tempfile
 import time
 import traceback
+import faulthandler
+faulthandler.enable(all_threads=True)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -34,6 +36,8 @@ from calypso.app import CalypsoApp  # noqa: E402
 errors = []
 BOOK = os.path.join(TMP, "livre.pdf")
 samples.make_book(BOOK)
+FORM = os.path.join(TMP, "formulaire.pdf")
+samples.make_form(FORM)
 WM = None
 if shutil.which("openbox"):
     WM = subprocess.Popen(["openbox", "--sm-disable"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -180,6 +184,113 @@ def scenario(win):
     xdo("key", "Escape")
     yield 0.8
     check(not win.is_fullscreen(), "Échap : sortie du plein écran")
+    v.clear_selection()
+    # -- annotations à la souris ------------------------------------------------------------------
+    win.activate_action("win.annotate", None)
+    v.go_to(0)
+    yield 0.8
+    win._tool_buttons["highlight"].emit("clicked")
+    yield 0.3
+    check(v.tool == "highlight", "bouton « Surligner »")
+    a = screen_pos(win, v, *v.page_rect_to_view(0, (60, 70, 1, 1))[:2])
+    b = screen_pos(win, v, *v.page_rect_to_view(0, (230, 95, 1, 1))[:2])
+    xdo("mousemove", *a)
+    yield 0.2
+    xdo("mousedown", 1)
+    for k in range(1, 11):
+        xdo("mousemove", a[0] + (b[0] - a[0]) * k // 10, a[1] + (b[1] - a[1]) * k // 10)
+        time.sleep(0.03)
+    yield 0.2
+    xdo("mouseup", 1)
+    yield 0.5
+    check([x.kind for x in win.document.annots(0)] == ["highlight"], "glisser avec « Surligner » : surlignage")
+    # rectangle tracé
+    win._tool_buttons["square"].emit("clicked")
+    yield 0.2
+    a = screen_pos(win, v, *v.page_rect_to_view(0, (300, 300, 1, 1))[:2])
+    b = screen_pos(win, v, *v.page_rect_to_view(0, (420, 380, 1, 1))[:2])
+    xdo("mousemove", *a)
+    yield 0.2
+    xdo("mousedown", 1)
+    for k in range(1, 11):
+        xdo("mousemove", a[0] + (b[0] - a[0]) * k // 10, a[1] + (b[1] - a[1]) * k // 10)
+        time.sleep(0.03)
+    yield 0.2
+    xdo("mouseup", 1)
+    yield 0.5
+    sq = [x for x in win.document.annots(0) if x.kind == "square"]
+    check(len(sq) == 1 and abs(sq[0].rect[2] - 120) < 6 and abs(sq[0].rect[3] - 80) < 6,
+          "rectangle tracé à la souris (120 × 80)")
+    # note : un clic, puis on tape
+    win._tool_buttons["note"].emit("clicked")
+    yield 0.2
+    xdo("mousemove", *screen_pos(win, v, *v.page_rect_to_view(0, (480, 200, 1, 1))[:2]))
+    yield 0.2
+    xdo("click", 1)
+    yield 0.8
+    check(win.annotator._popover is not None, "clic avec « Note » : bulle ouverte")
+    xdo("type", "Bonjour")
+    yield 0.4
+    xdo("key", "Escape")
+    yield 0.8
+    notes = [x for x in win.document.annots(0) if x.kind == "note"]
+    check(notes and notes[0].contents == "Bonjour", "texte tapé dans la note")
+    # sélection d'une annotation existante : clic, Suppr
+    win._tool_buttons["select"].emit("clicked")
+    yield 0.2
+    cx, cy = v.page_rect_to_view(0, (300, 340, 1, 1))[:2]
+    xdo("mousemove", *screen_pos(win, v, cx, cy))
+    yield 0.2
+    xdo("click", 1)
+    yield 0.6
+    check(v.selected_annot is not None and v.selected_annot.kind == "square", "clic sur le rectangle : choisi")
+    pop = win.annotator._popover
+    if pop is not None:
+        pop.popdown()
+        yield 0.4
+    v.grab_focus()
+    xdo("key", "Delete")
+    yield 0.4
+    check(not [x for x in win.document.annots(0) if x.kind == "square"], "Suppr : rectangle supprimé")
+    xdo("key", "ctrl+z")
+    yield 0.4
+    check([x for x in win.document.annots(0) if x.kind == "square"], "Ctrl+Z : rectangle revenu")
+    xdo("key", "ctrl+s")
+    yield 2
+    check(not win.document.dirty, "Ctrl+S : enregistré")
+    # -- formulaire ---------------------------------------------------------------------------------
+    w2 = app.open_path(FORM, new_window=True)
+    w2.set_default_size(1000, 800)
+    yield 2.5
+    out = subprocess.run(["xdotool", "search", "--name", "formulaire.pdf"], capture_output=True, text=True).stdout.split()
+    if out:
+        xdo("windowmove", out[-1], 0, 0)
+        yield 1
+        geo = subprocess.run(["xdotool", "getwindowgeometry", out[-1]], capture_output=True, text=True).stdout
+        pos = geo.split("Position:")[1].split()[0].split(",")
+        w2._origin = (int(pos[0]), int(pos[1]))
+    else:
+        w2._origin = (0, 0)
+    v2 = w2.view
+    doc = w2.document
+    field = lambda n: next(f for f in doc.fields(0) if f.name == n)
+    acc = field("accepte")
+    xdo("mousemove", *screen_pos(w2, v2, *v2.page_rect_to_view(0, (acc.rect[0] + 8, acc.rect[1] + 8, 1, 1))[:2]))
+    yield 0.3
+    xdo("click", 1)
+    yield 0.5
+    check(doc.field_value(field("accepte")) is True, "clic sur la case : cochée")
+    nom = field("nom")
+    xdo("mousemove", *screen_pos(w2, v2, *v2.page_rect_to_view(0, (nom.rect[0] + 20, nom.rect[1] + 10, 1, 1))[:2]))
+    yield 0.3
+    xdo("click", 1)
+    yield 0.5
+    check(v2.editor_widget() is not None, "clic sur le champ texte : saisie")
+    xdo("type", "Tof")
+    xdo("key", "Return")
+    yield 0.5
+    check(doc.field_value(field("nom")) == "Tof", "texte tapé dans le champ")
+    w2._discard_ok = True
 
 
 def start(win):

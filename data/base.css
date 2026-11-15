@@ -20,3 +20,16 @@
 popover.calypso-link-preview > contents {
   padding: 0;
 }
+
+/* champ de formulaire en saisie, posé sur la page : fond opaque du thème (sinon le texte imprimé
+   du champ se voyait à travers), bord en couleur d'accent */
+.calypso-field,
+.calypso-field > text {
+  background-color: @view_bg_color;
+  color: @view_fg_color;
+}
+
+.calypso-field {
+  border-radius: 3px;
+  box-shadow: 0 0 0 2px @accent_color;
+}

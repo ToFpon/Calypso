@@ -8,7 +8,6 @@ recherche + vue des pages. Le document est ouvert dans un fil (gros fichiers, pa
 from __future__ import annotations
 
 import os
-import shutil
 import threading
 from typing import Optional
 
@@ -35,7 +34,10 @@ PDF_FILTERS = [(tr("Documents PDF"), ["*.pdf", "*.PDF"]), (tr("Tous les fichiers
 ACCELS = {
     "win.open": ["<Control>o"],
     "win.close": ["<Control>w"],
-    "win.save-copy": ["<Control>s"],
+    "win.save": ["<Control>s"],
+    "win.save-as": ["<Control><Shift>s"],
+    "win.undo": ["<Control>z"],
+    "win.redo": ["<Control><Shift>z", "<Control>y"],
     "win.reload": ["<Control>r"],
     "win.properties": ["<Alt>Return"],
     "win.find": ["<Control>f"],
@@ -69,6 +71,8 @@ TEXT_KEYS = {
     ("x", True, False): ("action", "clipboard.cut"),
     ("v", True, False): ("action", "clipboard.paste"),
     ("z", True, False): ("action", "text.undo"),
+    ("z", True, True): ("action", "text.redo"),
+    ("y", True, False): ("action", "text.redo"),
     ("Left", True, False): ("move", Gtk.MovementStep.WORDS, -1, False),
     ("Right", True, False): ("move", Gtk.MovementStep.WORDS, 1, False),
     ("Left", True, True): ("move", Gtk.MovementStep.WORDS, -1, True),
@@ -93,6 +97,8 @@ class MainWindow(Adw.ApplicationWindow):
         self._stamp = None
         self._ctx = None
         self._fs_hide = 0
+        self._discard_ok = False
+        self._saving = False
         self._build()
         self._actions()
         if not getattr(app, "_calypso_accels", False):
@@ -148,6 +154,9 @@ class MainWindow(Adw.ApplicationWindow):
         self.search_btn = Gtk.ToggleButton(icon_name="edit-find-symbolic", tooltip_text=tr("Rechercher (Ctrl+F)"))
         self.search_btn.connect("toggled", self._on_search_toggled)
         self.header.pack_end(self.search_btn)
+        self.annotate_btn = Gtk.ToggleButton(icon_name="document-edit-symbolic", action_name="win.annotate",
+                                             tooltip_text=tr("Annoter"))
+        self.header.pack_end(self.annotate_btn)
 
         # contenu
         self.stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.CROSSFADE)
@@ -172,8 +181,17 @@ class MainWindow(Adw.ApplicationWindow):
         self.scroller.add_css_class("calypso-scroller")
         self.sidebar = Sidebar(self.view)
         self.search = Search(self)
+        from .annotations import Annotator
+        self.annotator = Annotator(self)
+        self.view.annotator = self.annotator
+        self.tools_bar = self._annot_bar()
+        self.forms_banner = Adw.Banner(title=tr("Ce document contient un formulaire à remplir"),
+                                       button_label=tr("Compris"))
+        self.forms_banner.connect("button-clicked", lambda b: b.set_revealed(False))
         content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        content.append(self.forms_banner)
         content.append(self.search.bar)
+        content.append(self.tools_bar)
         content.append(self.scroller)
         self.split = Adw.OverlaySplitView(sidebar=self.sidebar, content=content, min_sidebar_width=170,
                                           max_sidebar_width=260, sidebar_width_fraction=0.2,
@@ -193,7 +211,8 @@ class MainWindow(Adw.ApplicationWindow):
         files = Gio.Menu()
         files.append(tr("Ouvrir…"), "win.open")
         files.append(tr("Nouvelle fenêtre"), "app.new-window")
-        files.append(tr("Enregistrer une copie…"), "win.save-copy")
+        files.append(tr("Enregistrer"), "win.save")
+        files.append(tr("Enregistrer sous…"), "win.save-as")
         files.append(tr("Afficher dans le dossier"), "win.show-folder")
         files.append(tr("Recharger"), "win.reload")
         menu.append_section(None, files)
@@ -261,7 +280,18 @@ class MainWindow(Adw.ApplicationWindow):
         v = self.view
         self._add("open", self.choose_document)
         self._add("close", self.close)
-        self._add("save-copy", self.save_copy)
+        self._add("save", self.save)
+        self._add("save-as", self.save_as)
+        self._add("undo", lambda: self.annotator.undo())
+        self._add("redo", lambda: self.annotator.redo())
+        self._add_toggle("annotate", False, self._set_annotate)
+        a = Gio.SimpleAction.new_stateful("tool", GLib.VariantType.new("s"), GLib.Variant.new_string("select"))
+        a.connect("activate", lambda act, val: (act.set_state(val), self.view.set_tool(val.get_string()),
+                                                self._sync_tool_buttons()))
+        self.add_action(a)
+        self._add("markup", lambda kind: self.annotator.markup(kind), "s")
+        self._add("edit-annot", lambda: self._ctx_annot() and self.annotator.edit(self._ctx_annot()))
+        self._add("delete-annot", lambda: self._ctx_annot() and self.annotator.delete(self._ctx_annot()))
         self._add("show-folder", lambda: self.path and show_in_folder(self, self.path))
         self._add("reload", lambda: self.reload(force=True))
         self._add("properties", self.show_properties)
@@ -321,7 +351,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _sync_actions(self):
         has = self.document is not None
-        for name in ("save-copy", "show-folder", "reload", "properties", "find", "find-next", "find-previous",
+        for name in ("save-as", "annotate", "show-folder", "reload", "properties", "find", "find-next", "find-previous",
                      "select-all", "zoom-in", "zoom-out", "zoom-reset", "zoom-set", "zoom-mode", "rotate-left",
                      "rotate-right", "continuous", "dual", "dual-cover", "night", "first-page", "last-page",
                      "go-page", "sidebar"):
@@ -329,6 +359,10 @@ class MainWindow(Adw.ApplicationWindow):
             if a is not None:
                 a.set_enabled(has)
         self.lookup_action("dual-cover").set_enabled(has and self.view.dual)
+        self.lookup_action("save").set_enabled(has and self.document.dirty)
+        self.lookup_action("undo").set_enabled(has and self.annotator.can_undo())
+        self.lookup_action("redo").set_enabled(has and self.annotator.can_redo())
+        self.annotate_btn.set_visible(has)
         self.lookup_action("go-back").set_enabled(has and self.view.can_go_back())
         self.lookup_action("go-forward").set_enabled(has and self.view.can_go_forward())
         self.page_box.set_visible(has)
@@ -448,8 +482,12 @@ class MainWindow(Adw.ApplicationWindow):
             if features.enabled("resume"):
                 state.update(history().state(path))
         sidebar_shown = state.get("sidebar")
+        self.annotator.reset()
+        self._discard_ok = False
         self.view.set_document(doc, state)
         self.sidebar.set_document(doc)
+        self.forms_banner.set_revealed(False)
+        GLib.idle_add(self._check_forms, doc)
         if sidebar_shown is not None and not reloading:
             self.split.set_show_sidebar(sidebar_shown)
         if self.search.bar.get_search_mode() and self.search.query:
@@ -461,6 +499,7 @@ class MainWindow(Adw.ApplicationWindow):
         sub = doc.title if doc.title and doc.title.lower() != os.path.basename(path).lower() else ""
         self.title_widget.set_subtitle(shown(sub))
         self.set_title(name)
+        self.document_changed()
         self.stack.set_visible_child_name("document")
         self._show_page_number()
         self._sync_view_states()
@@ -470,6 +509,11 @@ class MainWindow(Adw.ApplicationWindow):
         if page:
             self.go_to_label(page)
         GLib.idle_add(lambda: (self.view.grab_focus(), False)[1])
+
+    def _check_forms(self, doc):
+        if doc is self.document and doc.has_fields():
+            self.forms_banner.set_revealed(True)
+        return False
 
     def go_to_label(self, label: str):
         if self.document is None:
@@ -517,7 +561,9 @@ class MainWindow(Adw.ApplicationWindow):
             st = os.stat(self.path)
         except OSError:
             return
-        if not force and self._stamp == (st.st_size, st.st_mtime_ns):
+        if not force and (self._stamp == (st.st_size, st.st_mtime_ns) or self.document.dirty
+                          or self._saving):
+            # modifications pas encore enregistrées : on ne les jette pas pour relire le fichier
             return
         state = self.view.get_state()
         self.open_document(self.path, password=self.document.password or None, state=state)
@@ -669,6 +715,21 @@ class MainWindow(Adw.ApplicationWindow):
             sec.append(tr("Enregistrer l'image sous…"), "win.save-image")
             sec.append(tr("Copier l'image"), "win.copy-image")
             menu.append_section(None, sec)
+        annot = info.get("annot")
+        if annot is not None:
+            self.view.select_annot(annot)
+            sec = Gio.Menu()
+            sec.append(tr("Modifier l'annotation…"), "win.edit-annot")
+            sec.append(tr("Supprimer l'annotation"), "win.delete-annot")
+            menu.append_section(None, sec)
+        if self.view.has_selection():
+            sec = Gio.Menu()
+            for kind, label in (("highlight", tr("Surligner")), ("underline", tr("Souligner")),
+                                ("strikeout", tr("Barrer"))):
+                item = Gio.MenuItem.new(label, None)
+                item.set_action_and_target_value("win.markup", GLib.Variant.new_string(kind))
+                sec.append_item(item)
+            menu.append_section(None, sec)
         sec = Gio.Menu()
         if self.view.has_selection():
             sec.append(tr("Copier"), "win.copy")
@@ -735,28 +796,134 @@ class MainWindow(Adw.ApplicationWindow):
     # ======================================================================================
     # Enregistrer une copie, propriétés
     # ======================================================================================
-    def save_copy(self):
-        if self.path is None:
+    def save(self, then=None):
+        """Ctrl+S : annotations et champs écrits dans le fichier même (nom caché, mise sur disque,
+        puis remplacement d'un coup). Fichier en lecture seule : « Enregistrer sous… »."""
+        if self.document is None or self.path is None:
             return
-        src = self.path
+        if not os.access(self.path, os.W_OK) or not os.access(os.path.dirname(os.path.abspath(self.path)), os.W_OK):
+            self.save_as(then)
+            return
+        self._write(self.path, then)
 
-        def save(dst):
-            if os.path.abspath(dst) == os.path.abspath(src):
-                return
+    def save_as(self, then=None):
+        if self.document is None:
+            return
+
+        def chosen(dst):
+            if not dst.lower().endswith(".pdf"):
+                dst += ".pdf"
+            self._write(dst, then)
+        choose_save(self, tr("Enregistrer sous"), self.path or "document.pdf", chosen)
+
+    def _write(self, dst: str, then=None):
+        doc = self.document
+        self.view.close_editor(commit=True)
+        self.annotator.close_popover(commit=True)
+        self._saving = True
+
+        def work():
             try:
-                tmp = os.path.join(os.path.dirname(dst), "." + os.path.basename(dst) + ".calypso-tmp")
-                shutil.copyfile(src, tmp)
-                with open(tmp, "rb+") as fh:
-                    os.fsync(fh.fileno())
-                os.replace(tmp, dst)
-                toast(self, tr("Copie enregistrée"))
-            except OSError as e:
-                try:
-                    os.unlink(tmp)
-                except OSError:
-                    pass
-                alert(self, tr("Impossible d'enregistrer la copie"), shown(e.strerror or str(e)))
-        choose_save(self, tr("Enregistrer une copie"), src, save)
+                doc.save(dst)
+                err = None
+            except Exception as e:
+                err = getattr(e, "strerror", None) or str(e)
+            GLib.idle_add(done, err)
+
+        def done(err):
+            self._saving = False
+            if doc is not self.document:
+                return False
+            if err:
+                alert(self, tr("Impossible d'enregistrer le document"), shown(err))
+                return False
+            if os.path.abspath(dst) != os.path.abspath(self.path):
+                # enregistré ailleurs : la fenêtre suit le nouveau fichier
+                self.path = dst
+                doc.path = dst
+                doc.dirty = False
+                self._watch(dst)
+                self.title_widget.set_subtitle("")
+            try:
+                st = os.stat(dst)
+                self._stamp = (st.st_size, st.st_mtime_ns)
+            except OSError:
+                pass
+            self.document_changed()
+            self.save_state()
+            toast(self, tr("Document enregistré"))
+            if then is not None:
+                then()
+            return False
+        threading.Thread(target=work, name="calypso-save", daemon=True).start()
+
+    def document_changed(self):
+        """Annotation ou champ modifié (ou enregistré) : titre, actions, panneau."""
+        doc = self.document
+        if doc is None:
+            return
+        name = shown(os.path.basename(self.path))
+        title = ("• " + name) if doc.dirty else name
+        self.title_widget.set_title(title)
+        self.set_title(title)
+        self._sync_actions()
+
+    # -- barre d'annotation -------------------------------------------------------------------------
+    def _annot_bar(self):
+        from .annotations import TOOLS, swatches
+        bar = Gtk.Box(spacing=6, margin_start=6, margin_end=6, margin_top=4, margin_bottom=4)
+        tools = Gtk.Box(css_classes=["linked"])
+        self._tool_buttons = {}
+        first = None
+        for tid, icon, label in TOOLS:
+            b = Gtk.ToggleButton(icon_name=icon, tooltip_text=label)
+            if first is not None:
+                b.set_group(first)
+            first = first or b
+            b.connect("toggled", lambda btn, t=tid: btn.get_active() and self.activate_action(
+                "win.tool", GLib.Variant.new_string(t)))
+            self._tool_buttons[tid] = b
+            tools.append(b)
+        self._tool_buttons["select"].set_active(True)
+        bar.append(tools)
+        self.color_btn = Gtk.MenuButton(icon_name="color-select-symbolic", tooltip_text=tr("Couleur"))
+        pop = Gtk.Popover()
+        self._swatch_holder = Gtk.Box(margin_top=6, margin_bottom=6, margin_start=6, margin_end=6)
+        pop.set_child(self._swatch_holder)
+
+        def fill(*_):
+            from .common import clear_box
+            clear_box(self._swatch_holder)
+            self._swatch_holder.append(swatches(self.annotator.color, lambda rgb: (self.annotator.set_color(rgb),
+                                                                                   pop.popdown())))
+        pop.connect("show", fill)
+        self.color_btn.set_popover(pop)
+        bar.append(self.color_btn)
+        bar.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
+        undo = Gtk.Box(css_classes=["linked"])
+        undo.append(Gtk.Button(icon_name="edit-undo-symbolic", action_name="win.undo", tooltip_text=tr("Annuler (Ctrl+Z)")))
+        undo.append(Gtk.Button(icon_name="edit-redo-symbolic", action_name="win.redo",
+                               tooltip_text=tr("Rétablir (Ctrl+Maj+Z)")))
+        bar.append(undo)
+        bar.append(Gtk.Box(hexpand=True))
+        save = Gtk.Button(label=tr("Enregistrer"), action_name="win.save", css_classes=["suggested-action"])
+        bar.append(save)
+        rev = Gtk.Revealer(child=bar, transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN)
+        rev.add_css_class("toolbar")
+        return rev
+
+    def _set_annotate(self, on: bool):
+        self.tools_bar.set_reveal_child(on)
+        if not on:
+            self.activate_action("win.tool", GLib.Variant.new_string("select"))
+
+    def _sync_tool_buttons(self):
+        b = self._tool_buttons.get(self.view.tool)
+        if b is not None and not b.get_active():
+            b.set_active(True)
+
+    def _ctx_annot(self):
+        return (self._ctx or {}).get("annot") or self.view.selected_annot
 
     def show_properties(self):
         if self.document is None:
@@ -826,11 +993,35 @@ class MainWindow(Adw.ApplicationWindow):
             self.toolbar.set_reveal_top_bars(False)
 
     def _on_close_request(self, *_):
+        if self.document is not None and self.document.dirty and not self._discard_ok:
+            self._ask_save_before_close()
+            return True
         self.save_state()
         if not self.is_maximized() and not self.is_fullscreen():
             settings["window_width"], settings["window_height"] = self.get_width(), self.get_height()
         self.teardown()
         return False
+
+    def _ask_save_before_close(self):
+        name = shown(os.path.basename(self.path or ""))
+        d = AlertDialog(tr("Enregistrer les modifications de « {0} » ?").format(name),
+                        tr("Les annotations et les champs remplis seront perdus si vous n'enregistrez pas."))
+        d.add_response("cancel", tr("Annuler"))
+        d.add_response("discard", tr("Ne pas enregistrer"))
+        d.add_response("save", tr("Enregistrer"))
+        d.set_response_appearance("discard", Adw.ResponseAppearance.DESTRUCTIVE)
+        d.set_response_appearance("save", Adw.ResponseAppearance.SUGGESTED)
+        d.set_default_response("save")
+        d.set_close_response("cancel")
+
+        def done(_d, r):
+            if r == "discard":
+                self._discard_ok = True
+                self.close()
+            elif r == "save":
+                self.save(then=self.close)
+        d.connect("response", done)
+        d.present(self)
 
     def teardown(self):
         self._open_gen += 1

@@ -22,6 +22,7 @@ DEFAULTS: dict[str, Any] = {
     "dual": False,
     "dual_odd_left": False,         # page double : la première page seule (couverture) — faux = 1-2, 3-4…
     "night": False,
+    "annot_author": "",             # auteur écrit dans les annotations ; vide : le nom de la session
     # Fenêtre
     "window_width": 1000,
     "window_height": 760,

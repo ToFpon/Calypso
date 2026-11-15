@@ -112,3 +112,47 @@ def make_mixed(path: str):
 
 def make_encrypted(src: str, dst: str, password: str):
     subprocess.run(["qpdf", "--encrypt", password, password + "-owner", "256", "--", src, dst], check=True)
+
+
+def make_form(path: str):
+    """Formulaire écrit à la main (AcroForm, NeedAppearances) : champ texte « nom », champ multiligne
+    « remarques », case à cocher « accepte », boutons radio « taille » (S / M), liste déroulante « pays »."""
+    objs = {}
+    objs[1] = "<< /Type /Catalog /Pages 2 0 R /AcroForm << /Fields [4 0 R 5 0 R 6 0 R 7 0 R 10 0 R] " \
+              "/NeedAppearances true /DA (/Helv 12 Tf 0 g) /DR << /Font << /Helv 11 0 R >> >> >> >>"
+    objs[2] = "<< /Type /Pages /Kids [3 0 R] /Count 1 >>"
+    objs[3] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 12 0 R " \
+              "/Resources << /Font << /F1 11 0 R >> >> /Annots [4 0 R 5 0 R 6 0 R 8 0 R 9 0 R 10 0 R] >>"
+    objs[4] = "<< /Type /Annot /Subtype /Widget /FT /Tx /T (nom) /Rect [150 740 400 760] /P 3 0 R " \
+              "/DA (/Helv 12 Tf 0 g) /F 4 /V () >>"
+    objs[5] = "<< /Type /Annot /Subtype /Widget /FT /Tx /T (remarques) /Ff 4096 /Rect [150 640 400 720] " \
+              "/P 3 0 R /DA (/Helv 10 Tf 0 g) /F 4 /V () >>"
+    objs[6] = "<< /Type /Annot /Subtype /Widget /FT /Btn /T (accepte) /Rect [150 600 166 616] /P 3 0 R " \
+              "/V /Off /AS /Off /F 4 /MK << /CA (4) >> " \
+              "/AP << /N << /Oui 13 0 R /Off 14 0 R >> >> >>"
+    objs[7] = "<< /FT /Btn /Ff 49152 /T (taille) /V /Off /Kids [8 0 R 9 0 R] >>"
+    objs[8] = "<< /Type /Annot /Subtype /Widget /Parent 7 0 R /Rect [150 560 166 576] /P 3 0 R /AS /Off " \
+              "/F 4 /MK << /CA (l) >> /AP << /N << /S 13 0 R /Off 14 0 R >> >> >>"
+    objs[9] = "<< /Type /Annot /Subtype /Widget /Parent 7 0 R /Rect [200 560 216 576] /P 3 0 R /AS /Off " \
+              "/F 4 /MK << /CA (l) >> /AP << /N << /M 13 0 R /Off 14 0 R >> >> >>"
+    objs[10] = "<< /Type /Annot /Subtype /Widget /FT /Ch /Ff 131072 /T (pays) /Rect [150 500 300 520] " \
+               "/P 3 0 R /Opt [(France) (Belgique) (Suisse)] /V (France) /DA (/Helv 12 Tf 0 g) /F 4 >>"
+    objs[11] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"
+    text = ("BT /F1 12 Tf 60 745 Td (Nom :) Tj 0 -100 Td (Remarques :) Tj 0 -40 Td (J'accepte) Tj "
+            "0 -40 Td (Taille : S / M) Tj 0 -60 Td (Pays :) Tj ET")
+    objs[12] = f"<< /Length {len(text)} >>\nstream\n{text}\nendstream"
+    on = "0 g 3 3 10 10 re f"
+    objs[13] = f"<< /Type /XObject /Subtype /Form /BBox [0 0 16 16] /Length {len(on)} >>\nstream\n{on}\nendstream"
+    objs[14] = "<< /Type /XObject /Subtype /Form /BBox [0 0 16 16] /Length 0 >>\nstream\n\nendstream"
+    out = bytearray(b"%PDF-1.7\n%\xe2\xe3\xcf\xd3\n")
+    offsets = {}
+    for n in sorted(objs):
+        offsets[n] = len(out)
+        out += f"{n} 0 obj\n{objs[n]}\nendobj\n".encode("latin-1")
+    xref = len(out)
+    out += f"xref\n0 {len(objs) + 1}\n0000000000 65535 f \n".encode()
+    for n in sorted(objs):
+        out += f"{offsets[n]:010d} 00000 n \n".encode()
+    out += f"trailer\n<< /Size {len(objs) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
+    with open(path, "wb") as fh:
+        fh.write(out)

@@ -49,6 +49,10 @@ MIXED = os.path.join(TMP, "mixed.pdf")
 samples.make_mixed(MIXED)
 SECRET = os.path.join(TMP, "secret.pdf")
 samples.make_encrypted(BOOK, SECRET, "sésame")
+NOTES = os.path.join(TMP, "notes.pdf")
+samples.make_book(NOTES, pages=3)
+FORM = os.path.join(TMP, "formulaire.pdf")
+samples.make_form(FORM)
 BAD = os.path.join(TMP, "abîmé.pdf")
 with open(BAD, "wb") as fh:
     fh.write(b"%PDF-1.4\nrien du tout\n")
@@ -424,6 +428,154 @@ def menu_contextuel(win):
     win.get_clipboard().read_texture_async(None, lambda cb, res: got.append(cb.read_texture_finish(res)))
     yield Wait(2, until=lambda: got)
     check(got and got[0] is not None and got[0].get_width() == 200, "« Copier l'image » : image de 200 px")
+
+
+@step
+def annotations(win):
+    from calypso.backend.document import Document
+    w = app.open_path(NOTES, new_window=True)
+    yield Wait(5, until=lambda: w.document is not None)
+    v, an = w.view, w.annotator
+    w.activate_action("win.annotate", None)
+    yield Wait(0.4)
+    check(w.tools_bar.get_reveal_child(), "« Annoter » : barre d'outils")
+    v._set_selection((0, 60.0, 70.0), (0, 300.0, 100.0), "glyph")
+    w.activate_action("win.tool", GLib.Variant.new_string("highlight"))
+    yield Wait(0.3)
+    kinds = [a.kind for a in w.document.annots(0)]
+    check(kinds == ["highlight"], "texte sélectionné + Surligner : surlignage posé")
+    check(not v.has_selection(), "sélection effacée après le surlignage")
+    check(w.title_widget.get_title().startswith("• "), "titre marqué « • » (non enregistré)")
+    check(w.lookup_action("save").get_enabled() and w.lookup_action("undo").get_enabled(), "Enregistrer et Annuler actifs")
+    yield Wait(2, until=lambda: any(k[1] == 0 for k in v._cache))
+    w.activate_action("win.undo", None)
+    yield Wait(0.2)
+    check(w.document.annots(0) == [], "Ctrl+Z : surlignage retiré")
+    w.activate_action("win.redo", None)
+    yield Wait(0.2)
+    check([a.kind for a in w.document.annots(0)] == ["highlight"], "Ctrl+Maj+Z : surlignage revenu")
+    # note : bulle ouverte, texte tapé
+    w.activate_action("win.tool", GLib.Variant.new_string("note"))
+    an.add_note(0, 420.0, 200.0)
+    yield Wait(0.4)
+    pop = an._popover
+    check(pop is not None and pop.get_visible(), "nouvelle note : bulle ouverte")
+    if pop is not None:
+        pop.text.get_buffer().set_text("Relire ce passage")
+        pop.popdown()
+    yield Wait(0.4)
+    notes = [a for a in w.document.annots(0) if a.kind == "note"]
+    check(notes and notes[0].contents == "Relire ce passage", "texte de la note enregistré dans l'annotation")
+    an.add_shape(1, "circle", (100.0, 100.0, 120.0, 60.0))
+    yield Wait(0.2)
+    check([a.kind for a in w.document.annots(1)] == ["circle"], "ellipse tracée")
+    w.sidebar.show_page("annots")
+    yield Wait(0.3)
+    rows = []
+    c = w.sidebar.annots_list.get_first_child()
+    while c is not None:
+        rows.append(c)
+        c = c.get_next_sibling()
+    check(len(rows) == 3, f"panneau « Annotations » : 3 lignes ({len(rows)})")
+    w.sidebar.show_page("thumbnails")
+    # couleur changée sur l'annotation choisie, puis suppression au clavier
+    circle = w.document.annots(1)[0]
+    v.select_annot(circle)
+    an.set_color((0.9, 0.15, 0.15))
+    yield Wait(0.2)
+    col = w.document.annot_props(circle.annot)["color"]
+    check(col is not None and col[0] > 0.85 and col[1] < 0.2, "couleur de l'annotation choisie changée")
+    v.grab_focus()
+    v._on_key(None, Gdk.KEY_Delete, 0, 0)
+    yield Wait(0.2)
+    check(w.document.annots(1) == [], "Suppr : annotation choisie supprimée")
+    w.activate_action("win.undo", None)
+    yield Wait(0.2)
+    check(len(w.document.annots(1)) == 1, "Ctrl+Z : annotation supprimée revenue")
+    # enregistrer
+    doc = w.document
+    w.activate_action("win.save", None)
+    yield Wait(5, until=lambda: not doc.dirty and not w._saving)
+    check(not doc.dirty and not w.title_widget.get_title().startswith("•"), "Ctrl+S : enregistré, « • » retiré")
+    yield Wait(1.5)
+    check(w.document is doc, "notre propre enregistrement ne recharge pas le document")
+    d2 = Document.open(NOTES)
+    got = sorted(a.kind for p in range(3) for a in d2.annots(p))
+    check(got == ["circle", "highlight", "note"], f"fichier relu : les trois annotations y sont ({got})")
+    # fermeture avec une modification non enregistrée : question
+    an.add_shape(2, "square", (50.0, 50.0, 40.0, 40.0))
+    yield Wait(0.2)
+    w.close()
+    yield Wait(0.5)
+    dialogs = [d for d in Gtk.Window.list_toplevels() if isinstance(d, Adw.MessageDialog) and d.get_visible()]
+    check(bool(dialogs) and w.get_visible(), "fermer avec des modifications : question posée, fenêtre gardée")
+    for d in dialogs:
+        d.response("discard")
+        d.close()
+    yield Wait(0.6)
+    check(not w.get_visible(), "« Ne pas enregistrer » : fenêtre fermée")
+    check(len(Document.open(NOTES).annots(2)) == 0, "rien d'écrit sans « Enregistrer »")
+
+
+@step
+def formulaires(win):
+    from calypso.backend.document import Document
+    w = app.open_path(FORM, new_window=True)
+    yield Wait(5, until=lambda: w.document is not None)
+    yield Wait(0.5)
+    check(w.forms_banner.get_revealed(), "formulaire : bandeau « à remplir »")
+    doc, an, v = w.document, w.annotator, w.view
+    fields = {(f.name, f.rect[0]): f for f in doc.fields(0)}
+    an.activate_field(fields[("accepte", 150.0)])
+    yield Wait(0.2)
+    check(doc.field_value(fields[("accepte", 150.0)]) is True, "case cochée d'un clic")
+    an.activate_field(fields[("taille", 200.0)])
+    yield Wait(0.2)
+    vals = {k: doc.field_value(f) for k, f in ((k, f) for k, f in
+                                               ((k, next(x for x in doc.fields(0) if (x.name, x.rect[0]) == k))
+                                                for k in fields))}
+    check(vals[("taille", 200.0)] is True and vals[("taille", 150.0)] is False, "bouton radio choisi")
+    nom = next(x for x in doc.fields(0) if x.name == "nom")
+    an.activate_field(nom)
+    yield Wait(0.3)
+    ed = v.editor_widget()
+    check(isinstance(ed, Gtk.Entry), "champ texte : zone de saisie posée sur le champ")
+    if ed is not None:
+        ed.set_text("Tof & Calypso")
+        ed.emit("activate")
+    yield Wait(0.3)
+    nom = next(x for x in doc.fields(0) if x.name == "nom")
+    check(doc.field_value(nom) == "Tof & Calypso" and v.editor_widget() is None, "Entrée : valeur écrite dans le champ")
+    rem = next(x for x in doc.fields(0) if x.name == "remarques")
+    an.activate_field(rem)
+    yield Wait(0.3)
+    ed = v.editor_widget()
+    check(ed is not None and isinstance(ed.get_child(), Gtk.TextView), "champ multiligne : zone de texte")
+    if ed is not None:
+        ed.get_child().get_buffer().set_text("ligne 1\nligne 2")
+        v.close_editor(commit=True)
+    yield Wait(0.2)
+    rem = next(x for x in doc.fields(0) if x.name == "remarques")
+    check(doc.field_value(rem) == "ligne 1\nligne 2", "texte sur deux lignes écrit")
+    pays = next(x for x in doc.fields(0) if x.name == "pays")
+    an.activate_field(pays)
+    yield Wait(0.3)
+    check(getattr(an, "_choice", None) is not None and an._choice.get_visible(), "liste déroulante : choix proposés")
+    an._choice.popdown()
+    an.set_field(pays, ((1,), ""))
+    w.activate_action("win.undo", None)
+    yield Wait(0.2)
+    pays = next(x for x in doc.fields(0) if x.name == "pays")
+    check(doc.field_value(pays) == ((0,), ""), "Ctrl+Z : choix annulé")
+    w.activate_action("win.redo", None)
+    w.activate_action("win.save", None)
+    yield Wait(5, until=lambda: not doc.dirty and not w._saving)
+    d2 = Document.open(FORM)
+    got = {f.name: d2.field_value(f) for f in d2.fields(0) if f.kind not in ("radio",)}
+    check(got.get("nom") == "Tof & Calypso" and got.get("accepte") is True and got.get("pays") == ((1,), ""),
+          f"formulaire enregistré et relu ({got})")
+    w.close()
+    yield Wait(0.4)
 
 
 @step

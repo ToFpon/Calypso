@@ -39,6 +39,7 @@ TILE = 1024
 PREVIEW_PX = 300_000
 CACHE_BYTES = 320 * 1024 * 1024
 PREVIEWS = 120
+MARKUP_TOOLS = ("highlight", "underline", "strikeout", "squiggly")
 ZOOM_STEPS = (0.25, 0.33, 0.5, 0.67, 0.75, 0.85, 1.0, 1.15, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0, 5.0,
               6.4, 8.0, 10.0, 12.8, 16.0)
 
@@ -79,6 +80,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         "selection-changed": (GObject.SignalFlags.RUN_FIRST, None, ()),
         "context-menu": (GObject.SignalFlags.RUN_FIRST, None, (float, float, object)),
         "history-changed": (GObject.SignalFlags.RUN_FIRST, None, ()),
+        "page-invalidated": (GObject.SignalFlags.RUN_FIRST, None, (int,)),
     }
     hadjustment = GObject.Property(type=Gtk.Adjustment)
     vadjustment = GObject.Property(type=Gtk.Adjustment)
@@ -107,6 +109,8 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         self._anchor = None                      # point de page à garder sous un point de la vue
         self._target = None                      # (page, haut en points, gauche) à atteindre après mise en page
         self._cache: OrderedDict = OrderedDict()
+        self._stale_previews: dict = {}
+        self._stale_tiles: dict = {}
         self._cache_bytes = 0
         self._previews: OrderedDict = OrderedDict()
         self._adj_handlers = {}
@@ -129,10 +133,20 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         # aperçu des liens
         self._hover_link = None
         self._preview_timer = 0
-        self._link_popover = None
+        self._link_popover = None                # bulle ouverte (None : fermée)
+        self._link_pop = None                    # la bulle, gardée
         self._pinch_zoom = 1.0
         self._nonc_scroll = 0.0
         self._pointer_pos = None
+        # annotations et formulaires
+        self.tool = "select"                     # select, note, highlight, underline, strikeout, squiggly, square, circle
+        self.annotator = None                    # ui/annotations.Annotator, posé par la fenêtre
+        self.selected_annot = None               # AnnotInfo
+        self.show_fields = True
+        self._band = None                        # rectangle en cours de tracé (page, x1, y1, x2, y2)
+        self._editor = None                      # (widget, page, rect) : champ de formulaire en saisie
+        self.set_has_tooltip(True)
+        self.connect("query-tooltip", self._on_tooltip)
 
         self.connect("notify::hadjustment", self._on_adj_set, "h")
         self.connect("notify::vadjustment", self._on_adj_set, "v")
@@ -174,12 +188,17 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         self._cache.clear()
         self._cache_bytes = 0
         self._previews.clear()
+        self._stale_tiles.clear()
+        self._stale_previews.clear()
         self._sel = None
         self._sel_cache = {}
         self.search_results = {}
         self.search_current = None
         self._back, self._forward = [], []
         self._hide_link_preview()
+        self.close_editor(commit=False)
+        self.selected_annot = None
+        self._band = None
         self._laid_out = False
         self._anchor = None
         if document is not None:
@@ -207,6 +226,17 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         self.emit("selection-changed")
 
     def teardown(self):
+        self.close_editor(commit=False)
+        if self.annotator is not None:
+            self.annotator.detach()
+        self._hide_link_preview()
+        if self._link_pop is not None:
+            self._link_pop.unparent()
+            self._link_pop = None
+        pop = getattr(self, "_calypso_popover", None)
+        if pop is not None and pop.get_parent() is self:
+            pop.unparent()
+            self._calypso_popover = None
         if self.renderer is not None:
             self.renderer.stop()
             self.renderer = None
@@ -344,6 +374,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
             self._apply_anchor(anchor)
         self._update_page()
         self._schedule_requests()
+        self._place_editor()
         self.emit("layout-changed")
 
     def _configure(self, width, height, size):
@@ -409,6 +440,8 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
 
     def _on_scrolled(self, *_):
         self.queue_draw()
+        if self._editor is not None:
+            self.queue_allocate()
         self._update_page()
         self._schedule_requests()
         self._hide_link_preview()
@@ -562,6 +595,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         """Pendant un zoom à la molette, seuls les aperçus sont redessinés ; le rendu net vient
         150 ms après le dernier cran."""
         self._settled = False
+        self._stale_tiles.clear()
         if self._zoom_settle:
             GLib.source_remove(self._zoom_settle)
 
@@ -774,11 +808,13 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         if texture is None:
             return
         if key[0] == "p":
+            self._stale_previews.pop(key[1], None)
             self._previews[key] = texture
             self._previews.move_to_end(key)
             while len(self._previews) > PREVIEWS:
                 self._previews.popitem(last=False)
         else:
+            self._stale_tiles.pop(key, None)
             size = texture.get_width() * texture.get_height() * 4
             self._cache[key] = texture
             self._cache_bytes += size
@@ -827,12 +863,13 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
             if self.night:
                 snap.push_color_matrix(*INVERT)
             snap.append_color(WHITE, rect)
-            prev = self._previews.get(("p", i, self.rotation))
+            prev = self._previews.get(("p", i, self.rotation)) or self._stale_previews.get(i)
             if prev is not None:
                 snap.append_texture(prev, rect)
             skey, tiles = self._tiles(i, ds)
             for t in tiles:
-                tex = self._cache.get(("v", i, skey, self.rotation, t))
+                key = ("v", i, skey, self.rotation, t)
+                tex = self._cache.get(key) or self._stale_tiles.get(key)
                 if tex is None:
                     continue
                 tx, ty, tw, th = t
@@ -845,6 +882,29 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
             if self._sel is not None:
                 for r in self._selection_rects(i):
                     snap.append_color(sel_color, _rect(*self.page_rect_to_view(i, r)))
+            if self.show_fields and self.annotator is not None:
+                fields = self.document.fields(i)
+                if fields:
+                    tint = self._accent(0.10)
+                    for f in fields:
+                        if not f.read_only and f.kind != "signature":
+                            snap.append_color(tint, _rect(*self.page_rect_to_view(i, f.rect)))
+            sa = self.selected_annot
+            if sa is not None and sa.page == i:
+                self._outline(snap, self.page_rect_to_view(i, sa.rect), self._accent(1.0))
+            if self._band is not None and self._band[0] == i:
+                _p, x1, y1, x2, y2 = self._band
+                r = self.page_rect_to_view(i, (min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1)))
+                self._outline(snap, r, self._accent(1.0))
+                snap.append_color(self._accent(0.12), _rect(*r))
+        if self._editor is not None:
+            self.snapshot_child(self._editor[0], snap)
+
+    def _outline(self, snap, r, color):
+        x, y, w, h = r
+        rr = Gsk.RoundedRect()
+        rr.init_from_rect(_rect(x - 2, y - 2, w + 4, h + 4), 2)
+        snap.append_border(rr, [2, 2, 2, 2], [color] * 4)
 
     def _accent(self, alpha: float) -> Gdk.RGBA:
         c = Gdk.RGBA()
@@ -929,19 +989,25 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         button = gesture.get_current_button()
         hit = self.hit(x, y)
         if button == 3:
-            info = {"hit": hit, "link": None, "image": None}
+            info = {"hit": hit, "link": None, "image": None, "annot": None}
             if hit is not None:
                 info["link"] = self.document.link_at(*hit)
                 info["image"] = self.document.image_at(*hit)
+                info["annot"] = self.document.annot_at(*hit)
             self.emit("context-menu", x, y, info)
             return
         if button != 1:
             return
         self._hide_link_preview()
+        self.close_editor(commit=True)
         self._press = (x, y, hit)
         self._dragging = False
+        self._band = None
         if hit is None:
             self.clear_selection()
+            self.select_annot(None)
+            return
+        if self.tool in ("square", "circle", "note"):
             return
         if n_press == 2:
             self._set_selection(hit, hit, "word")
@@ -955,10 +1021,35 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
             return
         press = self._press
         self._press = None
-        if self._dragging or n_press > 1:
+        if self._dragging:
+            return
+        if n_press > 1:
+            if self.tool in MARKUP_TOOLS and self._sel is not None and self.annotator is not None:
+                self.annotator.markup(self.tool)
             return
         hit = press[2]
-        link = self.document.link_at(*hit) if hit is not None and self.document is not None else None
+        if hit is None or self.document is None:
+            return
+        if self.tool == "note" and self.annotator is not None:
+            self.annotator.add_note(*hit)
+            return
+        if self.tool in ("square", "circle"):
+            return
+        doc = self.document
+        if self.annotator is not None and self.tool == "select":
+            field = doc.field_at(*hit)
+            if field is not None and not field.read_only:
+                self.clear_selection()
+                self.annotator.activate_field(field)
+                return
+            info = doc.annot_at(*hit)
+            if info is not None:
+                self.clear_selection()
+                self.select_annot(info)
+                self.annotator.edit(info)
+                return
+        link = doc.link_at(*hit)
+        self.select_annot(None)
         if link is not None:
             self.follow(link)
         else:
@@ -975,10 +1066,16 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         if start is None:
             return
         self._dragging = True
-        end = self.hit(x, y, nearest=True)
-        if end is not None:
-            style = self._press[3] if len(self._press) > 3 else "glyph"
-            self._set_selection(start, end, style)
+        if self.tool in ("square", "circle"):
+            page = start[0]
+            end = self._hit_in_page(page, x, y)
+            self._band = (page, start[1], start[2], end[0], end[1])
+            self.queue_draw()
+        elif self.tool != "note":
+            end = self.hit(x, y, nearest=True)
+            if end is not None:
+                style = self._press[3] if len(self._press) > 3 else "glyph"
+                self._set_selection(start, end, style)
         # défilement automatique près des bords
         h = self.get_height()
         dy = (y - (h - 24)) if y > h - 24 else (y - 24 if y < 24 else 0)
@@ -986,6 +1083,30 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         self._drag_pos = (gesture, sx, sy, ox, oy)
         if dy and not self._autoscroll:
             self._autoscroll = GLib.timeout_add(30, self._autoscroll_tick)
+
+    def _hit_in_page(self, page: int, vx: float, vy: float) -> tuple[float, float]:
+        """Point de la vue ramené dans la page (rectangle tracé jusqu'au bord)."""
+        x, y, w, h = self._rects[page]
+        dx = max(x, min(x + w, vx + self._hval()))
+        dy = max(y, min(y + h, vy + self._vval()))
+        return self.doc_to_page(page, dx, dy)
+
+    def _on_drag_end(self, *_):
+        self._autoscroll_dy = 0
+        if not self._dragging or self._press is None:
+            return
+        self._press = None
+        if self.annotator is None:
+            return
+        if self.tool in ("square", "circle") and self._band is not None:
+            page, x1, y1, x2, y2 = self._band
+            self._band = None
+            self.queue_draw()
+            rect = (min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
+            if rect[2] >= 3 and rect[3] >= 3:
+                self.annotator.add_shape(page, self.tool, rect)
+        elif self.tool in MARKUP_TOOLS and self._sel is not None:
+            self.annotator.markup(self.tool)
 
     def _autoscroll_tick(self):
         if not self._autoscroll_dy or self._press is None:
@@ -995,9 +1116,6 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         gesture, sx, sy, ox, oy = self._drag_pos
         self._on_drag_update(gesture, ox, oy)
         return True
-
-    def _on_drag_end(self, *_):
-        self._autoscroll_dy = 0
 
     def _on_pan_begin(self, *_):
         self._pan = (self._hval(), self._vval())
@@ -1012,10 +1130,18 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         cursor = "default"
         link = None
         if hit is not None and self.document is not None:
-            link = self.document.link_at(*hit)
-            if link is not None:
+            doc = self.document
+            field = doc.field_at(*hit) if self.annotator is not None and self.tool == "select" else None
+            link = doc.link_at(*hit) if field is None else None
+            if self.tool in ("square", "circle", "note"):
+                cursor = "crosshair"
+            elif field is not None and not field.read_only:
+                cursor = "text" if field.kind in ("text", "multiline", "password") else "pointer"
+            elif self.tool == "select" and doc.annot_at(*hit) is not None and not doc.char_at(*hit):
                 cursor = "pointer"
-            elif self.document.char_at(*hit):
+            elif link is not None and self.tool == "select":
+                cursor = "pointer"
+            elif doc.char_at(*hit):
                 cursor = "text"
         self.set_cursor_from_name(cursor)
         if link is not self._hover_link:
@@ -1038,11 +1164,13 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         self._preview_timer = 0
         if self._press is not None or self.document is None:
             return False
-        pop = Gtk.Popover(autohide=False, has_arrow=True, can_focus=False)
-        pop.add_css_class("calypso-link-preview")
-        area = LinkPreview(self, link)
-        pop.set_child(area)
-        pop.set_parent(self)
+        # une seule bulle, gardée : en détruire une juste fermée faisait planter GTK 4.14
+        pop = self._link_pop
+        if pop is None:
+            pop = self._link_pop = Gtk.Popover(autohide=False, has_arrow=True, can_focus=False)
+            pop.add_css_class("calypso-link-preview")
+            pop.set_parent(self)
+        pop.set_child(LinkPreview(self, link))
         r = Gdk.Rectangle()
         r.x, r.y, r.width, r.height = int(x), int(y), 1, 1
         pop.set_pointing_to(r)
@@ -1054,7 +1182,6 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         pop, self._link_popover = self._link_popover, None
         if pop is not None:
             pop.popdown()
-            pop.unparent()
 
     def _on_scroll(self, controller, dx, dy):
         state = controller.get_current_event_state()
@@ -1129,6 +1256,10 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
             self.set_zoom_mode("fit-page")
         elif k == "Escape" and self._sel is not None:
             self.clear_selection()
+        elif k == "Escape" and self.selected_annot is not None:
+            self.select_annot(None)
+        elif k in ("Delete", "KP_Delete") and self.selected_annot is not None and self.annotator is not None:
+            self.annotator.delete(self.selected_annot)
         else:
             return False
         return True
@@ -1160,6 +1291,94 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
                 self.previous_page()
                 return
         va.set_value(va.get_value() + direction * va.get_page_size() * 0.9)
+
+    # == annotations et formulaires ===========================================================
+    def set_tool(self, tool: str):
+        self.tool = tool
+        self._band = None
+        if tool != "select":
+            self.select_annot(None)
+        if tool in MARKUP_TOOLS and self._sel is not None and self.annotator is not None:
+            self.annotator.markup(tool)             # texte déjà sélectionné : annoté tout de suite
+        self.queue_draw()
+
+    def select_annot(self, info):
+        if info is self.selected_annot:
+            return
+        self.selected_annot = info
+        self.queue_draw()
+
+    def invalidate_page(self, page: int):
+        """La page a changé (annotation, champ) : rendus et aperçu oubliés, redessinés."""
+        # les anciennes tuiles restent affichées jusqu'aux nouvelles : pas de passage par le flou
+        for key in [k for k in self._cache if k[1] == page]:
+            tex = self._cache.pop(key)
+            self._cache_bytes -= tex.get_width() * tex.get_height() * 4
+            self._stale_tiles[key] = tex
+        # l'aperçu reste affiché (étiré) jusqu'au nouveau rendu : pas de clignotement blanc
+        stale = self._previews.get(("p", page, self.rotation))
+        self._previews.pop(("p", page, self.rotation), None)
+        if stale is not None:
+            self._stale_previews[page] = stale
+        if self.selected_annot is not None and self.selected_annot.page == page:
+            fresh = self.document.find_annot(self.selected_annot.annot) if self.document else None
+            self.selected_annot = fresh
+        self._schedule_requests()
+        self.queue_draw()
+        self.emit("page-invalidated", page)
+
+    def open_editor(self, widget: Gtk.Widget, page: int, rect):
+        """Champ de saisie posé sur un champ de formulaire de la page."""
+        self.close_editor(commit=True)
+        self._editor = (widget, page, rect)
+        widget.set_parent(self)
+        # placé dans NOTRE size_allocate : un size_allocate du champ fait à part n'était pas dessiné
+        self.queue_allocate()
+        widget.grab_focus()
+
+    def close_editor(self, commit: bool = True):
+        ed, self._editor = self._editor, None
+        if ed is None:
+            return
+        widget = ed[0]
+        done = getattr(widget, "_calypso_done", None)
+        if done is not None:
+            widget._calypso_done = None
+            done(commit)
+        widget.unparent()
+        self.queue_draw()
+
+    def _place_editor(self):
+        if self._editor is None or not self._laid_out:
+            return
+        widget, page, rect = self._editor
+        if not self._shows(page):
+            return
+        x, y, w, h = self.page_rect_to_view(page, rect)
+        widget.measure(Gtk.Orientation.HORIZONTAL, -1)
+        alloc = Gdk.Rectangle()
+        alloc.x, alloc.y = int(x), int(y)
+        alloc.width, alloc.height = max(24, int(w)), max(int(h), widget.measure(Gtk.Orientation.VERTICAL,
+                                                                                  int(w))[0])
+        widget.size_allocate(alloc, -1)
+
+    def editor_widget(self):
+        return self._editor[0] if self._editor is not None else None
+
+    def _on_tooltip(self, _w, x, y, keyboard, tooltip):
+        if keyboard or self.document is None:
+            return False
+        hit = self.hit(x, y)
+        if hit is None:
+            return False
+        info = self.document.annot_at(*hit)
+        if info is None or not (info.contents or info.author):
+            return False
+        text = info.contents.strip()
+        if info.author:
+            text = (text + "\n" if text else "") + "— " + info.author
+        tooltip.set_text(text[:600])
+        return True
 
     # == recherche =============================================================================
     def set_search_results(self, results: dict, current=None):

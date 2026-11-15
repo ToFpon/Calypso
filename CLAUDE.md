@@ -20,7 +20,7 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
 - Tout texte visible passe par `tr()` / `ntr()`. Après modification : `python3.12 tools/update-pot.py`,
   compléter `data/locale/en.po` et `de.po`, puis `msgfmt -c --statistics` et `msgcmp`.
 - Toute fonction passée à `idle_add` / `timeout_add` renvoie False (sauf répétition voulue).
-- Branche de travail `claude/kind-davinci-j4ke1f`, main avancé quand Tof valide.
+- Travail directement sur main (accord de Tof, après validation de la 0.1).
 
 ## Feuille de route (plan validé par Tof)
 
@@ -30,8 +30,12 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
    et copie du texte, liens (internes avec historique, Web, autres fichiers), aperçu des liens au survol,
    clic droit (copier, lien, enregistrer / copier une image), mot de passe, rechargement automatique,
    reprise (page, zoom, disposition par document), accueil avec documents récents, propriétés.
-2. Annotations (notes, surligner / souligner / barrer, texte libre, encre par pypdf : Poppler 24.02 n'a
-   pas AnnotInk), formulaires, enregistrement.
+2. Annotations, formulaires, enregistrement — FAIT (0.2.0) : notes, surligner / souligner / barrer /
+   onduler, rectangle, ellipse ; bulle (commentaire, couleur, supprimer), panneau « Annotations », auteur
+   (Préférences), Ctrl+Z / Ctrl+Maj+Z ; formulaires (texte, multiligne, cases, radios, listes) ; Ctrl+S
+   (dans le fichier même), Ctrl+Maj+S, question « Enregistrer les modifications ? » à la fermeture.
+   Reste pour plus tard : texte libre et dessin à main levée (Poppler 24.02 ne sait pas les CRÉER :
+   pas d'AnnotFreeText.new ni d'AnnotInk → pypdf, qui a FreeText / PolyLine).
 3. Outils d'Odysseus (`odysseus/backend/pdf.py` : compresser, fusionner, filigrane, extraire / supprimer /
    pivoter / éclater des pages) dans un menu « Outils » ; protéger par mot de passe (qpdf) avec le
    générateur et la jauge de Pressoir ; réorganiser les pages en glissant les miniatures ; caviarder.
@@ -77,6 +81,38 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
 - `backend/history.py` : récents + état par document (chemin réel), 300 au plus, valeurs du bon type
   seulement. `backend/thumbs.py` : vignettes des récents (PNG en cache, clé = chemin + taille + date).
 
+- Annotations / formulaires (`backend/document.py` `_AnnotsMixin`, `ui/annotations.py` `Annotator`) :
+  l'Annotator est le seul à modifier le document ; chaque changement → pile d'annulation (opérations
+  en LISTES : une annotation remise est une copie neuve qui remplace l'ancienne), `view.invalidate_page`
+  (anciennes tuiles gardées jusqu'aux nouvelles : pas de passage par le flou), `window.document_changed`
+  (« • » dans le titre). `Document.dirty`. Outils de la vue (`DocView.tool`) : select (clic sur un champ
+  → `activate_field`, sur une annotation → bulle), note (clic), surligner… (glisser = sélection, puis
+  annotation à la fin du glisser — `_on_drag_end` : GestureClick n'émet pas « released » après un
+  glisser), rectangle / ellipse (tracé). Champ texte en saisie = widget ENFANT de la vue (`open_editor`,
+  placé dans `do_size_allocate`, `snapshot_child` ; un size_allocate fait à part n'était pas dessiné),
+  fond `@view_bg_color` (`.calypso-field`, sinon transparent).
+- Pièges de Poppler 24.02 (glib, par PyGObject), tous contournés et testés :
+  - `Quadrilateral.p1` renvoie une COPIE : poser des `Poppler.Point` neufs (`_quad`) — sinon QuadPoints
+    à 0, surlignage ni dessiné ni enregistré.
+  - `get_quadrilaterals` : « free(): invalid pointer » → jamais appelé ; nos quadrilatères sont gardés
+    (`_quads`), sinon le rectangle sert de quadrilatère.
+  - Une annotation retirée puis RAJOUTÉE telle quelle n'est pas écrite à l'enregistrement →
+    `restore_annot` pose une copie (`_clone`).
+  - Chaque lecture des annotations d'une page donne de NOUVEAUX objets Python sans nom (/NM) →
+    `find_annot` compare type + rectangle.
+  - Formulaire en NeedAppearances : une case cochée puis REDESSINÉE s'enregistre avec une apparence à
+    un seul état (relue décochée) → `backend/formfix.repair` remet, après l'écriture, les /AP à états du
+    fichier d'origine (pypdf ; sans pypdf ou document chiffré : rien).
+  - AnnotFreeText / AnnotInk : pas de constructeur.
+- GTK 4.14 : une bulle (Gtk.Popover) DÉTRUITE juste après sa fermeture fait planter la fenêtre
+  (`gtk_window_native_layout` → `gdk_surface_request_motion(NULL)`, vu avec Échap dans la bulle d'une
+  note, comme dans Odysseus) → une seule bulle de chaque sorte, gardée et réutilisée (annotation, liste
+  d'un champ, aperçu de lien), détachée seulement à la fermeture de la fenêtre (`teardown`).
+- Enregistrement (`Document.save`) : nom caché dans le dossier de destination, fsync, `os.replace`,
+  fsync du dossier ; droits du fichier remplacé gardés ; document chiffré : reste chiffré (Poppler).
+  Fait dans un fil ; notre propre écriture ne déclenche pas le rechargement (date notée) ; document
+  modifié : jamais rechargé tout seul. Fichier en lecture seule : « Enregistrer sous ».
+
 ## Tests
 
 Le `python3` du bac à sable n'a pas `gi` : utiliser `python3.12`.
@@ -90,5 +126,7 @@ python3 -m pyflakes calypso tests tools
 ```
 
 Documents d'essai : `tests/samples.py` (livre de 12 pages avec sommaire, liens, image ; pages de tailles
-différentes ; chiffré par qpdf). Captures : `xvfb-run -a -s "-screen 0 1400x1000x24" python3.12
+différentes ; chiffré par qpdf ; formulaire écrit à la main : texte, multiligne, case, radios, liste).
+Une capture ou un test qui quitte avec un document modifié doit poser `dirty = False` (sinon la question
+« Enregistrer ? » attend). Captures : `xvfb-run -a -s "-screen 0 1400x1000x24" python3.12
 tools/screenshot.py SORTIE.png [--dark] [--sidebar=outline] [--search=TEXTE] [--welcome] …`.
