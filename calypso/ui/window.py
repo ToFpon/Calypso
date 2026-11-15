@@ -59,6 +59,8 @@ ACCELS = {
     "win.last-page": ["<Control>End"],
     "win.go-page": ["<Control>l"],
     "win.shortcuts": ["F1", "<Control>question"],
+    "win.presentation": ["F5"],
+    "win.print": ["<Control>p"],
 }
 
 # (touche, Ctrl, Maj) → ce que fait la touche dans un champ de saisie. GTK 4 traite les raccourcis de
@@ -191,12 +193,18 @@ class MainWindow(Adw.ApplicationWindow):
         self.forms_banner = Adw.Banner(title=tr("Ce document contient un formulaire à remplir"),
                                        button_label=tr("Compris"))
         self.forms_banner.connect("button-clicked", lambda b: b.set_revealed(False))
+        self.sig_banner = Adw.Banner(button_label=tr("Détails"))
+        self.sig_banner.connect("button-clicked", lambda *_: (self.split.set_show_sidebar(True),
+                                                              self.sidebar.show_page("signatures")))
         content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        content.append(self.sig_banner)
         content.append(self.forms_banner)
         content.append(self.search.bar)
         content.append(self.tools_bar)
         self.redact_bar = self._redact_bar()
         content.append(self.redact_bar)
+        self.sign_bar = self._sign_bar()
+        content.append(self.sign_bar)
         content.append(self.scroller)
         self.split = Adw.OverlaySplitView(sidebar=self.sidebar, content=content, min_sidebar_width=170,
                                           max_sidebar_width=260, sidebar_width_fraction=0.2,
@@ -220,6 +228,7 @@ class MainWindow(Adw.ApplicationWindow):
         files.append(tr("Enregistrer sous…"), "win.save-as")
         files.append(tr("Afficher dans le dossier"), "win.show-folder")
         files.append(tr("Recharger"), "win.reload")
+        files.append(tr("Imprimer…"), "win.print")
         menu.append_section(None, files)
         view = Gio.Menu()
         view.append(tr("Défilement continu"), "win.continuous")
@@ -231,6 +240,7 @@ class MainWindow(Adw.ApplicationWindow):
         turn.append(tr("Pivoter à gauche"), "win.rotate-left")
         turn.append(tr("Pivoter à droite"), "win.rotate-right")
         turn.append(tr("Plein écran"), "win.fullscreen")
+        turn.append(tr("Présentation"), "win.presentation")
         menu.append_section(None, turn)
         misc = Gio.Menu()
         misc.append(tr("Propriétés du document"), "win.properties")
@@ -251,6 +261,10 @@ class MainWindow(Adw.ApplicationWindow):
         change.append(tr("Filigrane…"), "win.watermark")
         change.append(tr("Caviarder…"), "win.redact")
         menu.append_section(None, change)
+        sign = Gio.Menu()
+        sign.append(tr("Signer…"), "win.sign")
+        sign.append(tr("Importer un certificat…"), "win.import-cert")
+        menu.append_section(None, sign)
         lock = Gio.Menu()
         lock.append(tr("Protéger par un mot de passe…"), "win.protect")
         lock.append(tr("Retirer le mot de passe…"), "win.unprotect")
@@ -320,6 +334,9 @@ class MainWindow(Adw.ApplicationWindow):
         self._add("protect", lambda: self._with_saved(lambda: tool_ui.ProtectDialog(self).present()))
         self._add("unprotect", lambda: self._with_saved(lambda: tool_ui.unprotect(self)))
         self._add("redact", lambda: self._with_saved(self._start_redact))
+        from . import signatures as sig_ui
+        self._add("sign", lambda: self._with_saved(lambda: sig_ui.start_signing(self)))
+        self._add("import-cert", lambda: sig_ui.import_certificate(self))
         self._add("edit-annot", lambda: self._ctx_annot() and self.annotator.edit(self._ctx_annot()))
         self._add("delete-annot", lambda: self._ctx_annot() and self.annotator.delete(self._ctx_annot()))
         self._add("show-folder", lambda: self.path and show_in_folder(self, self.path))
@@ -351,6 +368,8 @@ class MainWindow(Adw.ApplicationWindow):
         self._add("last-page", v.last_page)
         self._add("go-page", self._focus_page_entry)
         self._add("shortcuts", self._shortcuts)
+        self._add("presentation", self.start_presentation)
+        self._add("print", self._print)
         self._add_toggle("search-case", False, lambda on: self.search.set_options(case=on))
         self._add_toggle("search-whole", False, lambda on: self.search.set_options(whole=on))
         # menus contextuels de la vue et de l'accueil
@@ -381,7 +400,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _sync_actions(self):
         has = self.document is not None
-        for name in ("save-as", "annotate", "organize", "merge", "compress", "watermark", "protect", "redact",
+        for name in ("save-as", "print", "presentation", "annotate", "sign", "organize", "merge", "compress", "watermark", "protect", "redact",
                      "show-folder", "reload", "properties", "find", "find-next", "find-previous",
                      "select-all", "zoom-in", "zoom-out", "zoom-reset", "zoom-set", "zoom-mode", "rotate-left",
                      "rotate-right", "continuous", "dual", "dual-cover", "night", "first-page", "last-page",
@@ -521,6 +540,10 @@ class MainWindow(Adw.ApplicationWindow):
         self.sidebar.set_document(doc)
         self.forms_banner.set_revealed(False)
         GLib.idle_add(self._check_forms, doc)
+        self.sig_banner.set_revealed(False)
+        self.sidebar.set_signatures([])
+        from .signatures import check_document
+        GLib.idle_add(lambda: (check_document(self, doc), False)[1])
         if sidebar_shown is not None and not reloading:
             self.split.set_show_sidebar(sidebar_shown)
         if self.search.bar.get_search_mode() and self.search.query:
@@ -958,6 +981,52 @@ class MainWindow(Adw.ApplicationWindow):
         from .organizer import PageOrganizer
         PageOrganizer(self).present()
 
+    # -- signatures ----------------------------------------------------------------------------------
+    def show_signatures(self, sigs: list):
+        from ..backend.signing import summary
+        self.signatures = sigs
+        self.sidebar.set_signatures(sigs)
+        level, text = summary(sigs)
+        self.sig_banner.set_title(GLib.markup_escape_text(shown(text)))
+        for cls in ("calypso-sig-ok", "calypso-sig-warning", "calypso-sig-error"):
+            self.sig_banner.remove_css_class(cls)
+        if level:
+            self.sig_banner.add_css_class("calypso-sig-" + level)
+        self.sig_banner.set_revealed(bool(sigs))
+
+    def _sign_bar(self):
+        bar = Gtk.Box(spacing=8, margin_start=8, margin_end=8, margin_top=4, margin_bottom=4)
+        bar.append(Gtk.Image(icon_name="document-edit-symbolic"))
+        bar.append(Gtk.Label(label=tr("Tracez sur la page l'emplacement de la signature"), xalign=0, hexpand=True,
+                             wrap=True))
+        cancel = Gtk.Button(label=tr("Annuler"))
+        cancel.connect("clicked", lambda *_: self._end_sign_area())
+        bar.append(cancel)
+        rev = Gtk.Revealer(child=bar, transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN)
+        rev.add_css_class("toolbar")
+        self.view.connect("area-drawn", self._on_sign_area)
+        return rev
+
+    def begin_sign_area(self):
+        if self.lookup_action("annotate").get_state().get_boolean():
+            self.activate_action("win.annotate", None)
+        if self.redact_bar.get_reveal_child():
+            self._end_redact()
+        self.sign_bar.set_reveal_child(True)
+        self.view.set_tool("sign")
+
+    def _end_sign_area(self):
+        self.sign_bar.set_reveal_child(False)
+        if self.view.tool == "sign":
+            self.view.set_tool("select")
+
+    def _on_sign_area(self, _v, page, rect):
+        if self.view.tool != "sign":
+            return
+        self._end_sign_area()
+        from .signatures import SignDialog
+        SignDialog(self, page, rect).present()
+
     # -- caviardage ---------------------------------------------------------------------------------
     def _redact_bar(self):
         bar = Gtk.Box(spacing=8, margin_start=8, margin_end=8, margin_top=4, margin_bottom=4)
@@ -1087,6 +1156,17 @@ class MainWindow(Adw.ApplicationWindow):
             return
         from .properties import PropertiesWindow
         PropertiesWindow(self.document, self.path).present(self)
+
+    def start_presentation(self):
+        if self.document is None:
+            return
+        from .presentation import PresentationWindow
+        self.presentation = PresentationWindow(self, self.view.page)
+        self.presentation.present()
+
+    def _print(self):
+        from .printing import print_document
+        print_document(self)
 
     def _shortcuts(self):
         from .shortcuts import shortcuts_window

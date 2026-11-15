@@ -84,6 +84,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         "history-changed": (GObject.SignalFlags.RUN_FIRST, None, ()),
         "page-invalidated": (GObject.SignalFlags.RUN_FIRST, None, (int,)),
         "redactions-changed": (GObject.SignalFlags.RUN_FIRST, None, ()),
+        "area-drawn": (GObject.SignalFlags.RUN_FIRST, None, (int, object)),
     }
     hadjustment = GObject.Property(type=Gtk.Adjustment)
     vadjustment = GObject.Property(type=Gtk.Adjustment)
@@ -1016,7 +1017,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
             self.clear_selection()
             self.select_annot(None)
             return
-        if self.tool in ("square", "circle", "note", "redact"):
+        if self.tool in ("square", "circle", "note", "redact", "sign"):
             return
         if n_press == 2:
             self._set_selection(hit, hit, "word")
@@ -1078,7 +1079,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         if start is None:
             return
         self._dragging = True
-        if self.tool in ("square", "circle", "redact"):
+        if self.tool in ("square", "circle", "redact", "sign"):
             page = start[0]
             end = self._hit_in_page(page, x, y)
             self._band = (page, start[1], start[2], end[0], end[1])
@@ -1110,7 +1111,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
         self._press = None
         if self.annotator is None:
             return
-        if self.tool in ("square", "circle", "redact") and self._band is not None:
+        if self.tool in ("square", "circle", "redact", "sign") and self._band is not None:
             page, x1, y1, x2, y2 = self._band
             self._band = None
             self.queue_draw()
@@ -1119,6 +1120,8 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
                 if self.tool == "redact":
                     self.redactions.setdefault(page, []).append(rect)
                     self.emit("redactions-changed")
+                elif self.tool == "sign":
+                    self.emit("area-drawn", page, rect)
                 else:
                     self.annotator.add_shape(page, self.tool, rect)
         elif self.tool in MARKUP_TOOLS and self._sel is not None:
@@ -1149,7 +1152,7 @@ class DocView(Gtk.Widget, Gtk.Scrollable):
             doc = self.document
             field = doc.field_at(*hit) if self.annotator is not None and self.tool == "select" else None
             link = doc.link_at(*hit) if field is None else None
-            if self.tool in ("square", "circle", "note", "redact"):
+            if self.tool in ("square", "circle", "note", "redact", "sign"):
                 cursor = "crosshair"
             elif field is not None and not field.read_only:
                 cursor = "text" if field.kind in ("text", "multiline", "password") else "pointer"

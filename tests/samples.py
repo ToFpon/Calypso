@@ -156,3 +156,19 @@ def make_form(path: str):
     out += f"trailer\n<< /Size {len(objs) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
     with open(path, "wb") as fh:
         fh.write(out)
+
+
+def make_nss(folder: str, name: str = "Tof Calypso") -> str:
+    """Base NSS jetable avec un certificat auto-signé (pour signer dans les tests) ; renvoie aussi
+    le .p12 correspondant (mot de passe « secret »)."""
+    import os
+    os.makedirs(folder, exist_ok=True)
+    nss = os.path.join(folder, "nss")
+    os.makedirs(nss, exist_ok=True)
+    subprocess.run(["certutil", "-N", "-d", "sql:" + nss, "--empty-password"], check=True, capture_output=True)
+    key, crt, p12 = (os.path.join(folder, n) for n in ("k.pem", "c.pem", "c.p12"))
+    subprocess.run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", key, "-out", crt,
+                    "-days", "365", "-subj", f"/CN={name}/O=Essai"], check=True, capture_output=True)
+    subprocess.run(["openssl", "pkcs12", "-export", "-inkey", key, "-in", crt, "-out", p12, "-passout",
+                    "pass:secret", "-name", "tof"], check=True, capture_output=True)
+    return nss, p12

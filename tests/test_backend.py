@@ -445,6 +445,58 @@ class ToolsTest(unittest.TestCase):
         self.assertEqual(d.size(0), before.size(0))
 
 
+class SigningTest(unittest.TestCase):
+    """Importer un certificat .p12, signer, vérifier, puis détecter une modification après signature.
+    La base NSS est choisie une fois par processus : CALYPSO_NSS_DIR posé avant tout."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.mkdtemp(prefix="calypso-sign-")
+        cls.nss, cls.p12 = samples.make_nss(cls.tmp)
+        os.environ["CALYPSO_NSS_DIR"] = cls.nss
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def test_import_sign_validate(self):
+        from gi.repository import GLib
+        from calypso.backend import signing
+        self.assertEqual(signing.ensure_nss(), self.nss)
+        self.assertEqual(signing.import_p12(self.p12, "faux"), signing.tr("Mot de passe du certificat incorrect."))
+        self.assertEqual(signing.import_p12(self.p12, "secret"), "")
+        certs = signing.certificates()
+        self.assertEqual([c.name for c in certs], ["Tof Calypso"])
+        book = os.path.join(self.tmp, "livre.pdf")
+        samples.make_book(book, pages=2)
+        doc = Document.open(book)
+        self.assertEqual(signing.validate(doc), [])
+        out = os.path.join(self.tmp, "signé.pdf")
+        result = []
+        loop = GLib.MainLoop()
+        signing.sign(doc, certs[0], 0, (350, 700, 200, 60), out, "Signé par Tof", "Accord", "Paris",
+                     done=lambda err: (result.append(err), loop.quit()))
+        GLib.timeout_add_seconds(20, loop.quit)
+        loop.run()
+        self.assertEqual(result, [""])
+        signed = Document.open(out)
+        sigs = signing.validate(signed)
+        self.assertEqual(len(sigs), 1)
+        self.assertEqual((sigs[0].signer, sigs[0].status, sigs[0].certificate),
+                         ("Tof Calypso", "valid", "untrusted"))          # auto-signé : pas « de confiance »
+        self.assertEqual(sigs[0].page, 0)
+        self.assertEqual(signing.summary(sigs)[0], "warning")
+        # un octet changé dans la partie signée : signature invalide
+        data = bytearray(_read(out))
+        k = data.find(b"Chapitre")
+        data[k:k + 1] = b"X"
+        bad = os.path.join(self.tmp, "modifié.pdf")
+        with open(bad, "wb") as fh:
+            fh.write(data)
+        sigs = signing.validate(Document.open(bad))
+        self.assertEqual(signing.summary(sigs)[0], "error")
+
+
 class HistoryTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="calypso-hist-")

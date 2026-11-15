@@ -50,3 +50,8 @@ flowboxchild.calypso-picked {
 flowboxchild {
   padding: 6px;
 }
+
+/* bandeau des signatures : couleurs d'état du thème (succès, avertissement, erreur) */
+banner.calypso-sig-ok > revealer > widget { background-color: alpha(@success_color, 0.18); }
+banner.calypso-sig-warning > revealer > widget { background-color: alpha(@warning_color, 0.20); }
+banner.calypso-sig-error > revealer > widget { background-color: alpha(@error_color, 0.20); }

@@ -57,6 +57,10 @@ os.makedirs(os.path.dirname(TOOLS))
 samples.make_book(TOOLS, pages=4)
 FORM = os.path.join(TMP, "formulaire.pdf")
 samples.make_form(FORM)
+NSS, P12 = samples.make_nss(os.path.join(TMP, "certs"))
+os.environ["CALYPSO_NSS_DIR"] = NSS          # avant toute opération NSS du processus
+SIGNME = os.path.join(TMP, "contrat.pdf")
+samples.make_book(SIGNME, pages=2)
 BAD = os.path.join(TMP, "abîmé.pdf")
 with open(BAD, "wb") as fh:
     fh.write(b"%PDF-1.4\nrien du tout\n")
@@ -700,6 +704,88 @@ def outils(win):
     check(not w.redact_bar.get_reveal_child() and w.view.tool == "select", "fin du caviardage")
     w.close()
     yield Wait(0.4)
+
+
+@step
+def signatures(win):
+    from calypso.backend import signing
+    from calypso.ui import signatures as sigmod
+    w = app.open_path(SIGNME, new_window=True)
+    yield Wait(5, until=lambda: w.document is not None)
+    yield Wait(0.5)
+    check(not w.sig_banner.get_revealed(), "document non signé : pas de bandeau")
+    w._toasts = []
+    w.toast_overlay.add_toast = lambda t: w._toasts.append(t)
+    # sans certificat : on propose d'en importer un
+    w.activate_action("win.sign", None)
+    yield Wait(0.4)
+    ask = [x for x in Gtk.Window.list_toplevels() if isinstance(x, Adw.MessageDialog) and x.get_visible()]
+    check(bool(ask), "« Signer… » sans certificat : proposition d'import")
+    for x in ask:
+        x.close()
+    check(signing.import_p12(P12, "secret") == "", "certificat .p12 importé")
+    w.activate_action("win.sign", None)
+    yield Wait(0.4)
+    check(w.sign_bar.get_reveal_child() and w.view.tool == "sign", "« Signer… » : tracer l'emplacement")
+    dialogs = []
+    real = sigmod.SignDialog.present
+    sigmod.SignDialog.present = lambda self: (dialogs.append(self), real(self))
+    w.view.emit("area-drawn", 0, (330.0, 720.0, 220.0, 60.0))
+    yield Wait(0.4)
+    sigmod.SignDialog.present = real
+    check(dialogs and not w.sign_bar.get_reveal_child(), "zone tracée : fenêtre « Signer le document »")
+    if not dialogs:
+        return
+    d = dialogs[0]
+    check(d.text.get_text().endswith("Tof Calypso"), "texte proposé : « Signé par Tof Calypso »")
+    d._go()
+    yield Wait(15, until=lambda: w._toasts)
+    out = os.path.join(TMP, "contrat ({0}).pdf".format(tr("signé")))
+    check(os.path.exists(out), "copie signée créée")
+    w2 = app.open_path(out, new_window=True)
+    yield Wait(8, until=lambda: w2.document is not None and w2.sig_banner.get_revealed())
+    check(w2.sig_banner.get_revealed() and "Tof Calypso" in w2.sig_banner.get_title(),
+          "document signé : bandeau « Signé par Tof Calypso »")
+    check(w2.sig_banner.has_css_class("calypso-sig-warning"), "certificat auto-signé : avertissement, pas « valide »")
+    check(w2.sidebar._buttons["signatures"].get_visible(), "panneau « Signatures »")
+    w2.close()
+    w.close()
+    yield Wait(0.4)
+
+
+@step
+def presentation_impression(win):
+    from calypso.backend.document import Document
+    from calypso.ui import printing
+    w = app.open_path(BOOK, new_window=True)
+    yield Wait(5, until=lambda: w.document is not None)
+    w.view.go_to(2)
+    yield Wait(0.3)
+    w.activate_action("win.presentation", None)
+    yield Wait(1.5)
+    pres = getattr(w, "presentation", None)
+    check(pres is not None and pres.get_visible() and pres.page == 2, "F5 : présentation à la page 3")
+    if pres is None:
+        return
+    yield Wait(3, until=lambda: any(k[0] == 2 for k in pres.textures))
+    check(any(k[0] == 2 for k in pres.textures), "page présentée rendue à la taille de l'écran")
+    pres._on_key(None, Gdk.KEY_Right, 0, 0)
+    pres._on_key(None, Gdk.KEY_space, 0, 0)
+    check(pres.page == 4, "→ puis Espace : page 5")
+    pres._on_key(None, Gdk.KEY_b, 0, 0)
+    check(pres.blank == "black", "« b » : écran noir")
+    pres._on_key(None, Gdk.KEY_Right, 0, 0)
+    check(pres.blank == "" and pres.page == 4, "touche suivante : l'écran revient, même page")
+    for key in (Gdk.KEY_1, Gdk.KEY_0, Gdk.KEY_Return):
+        pres._on_key(None, key, 0, 0)
+    check(pres.page == 9, "« 10 » + Entrée : page 10")
+    pres._on_key(None, Gdk.KEY_Escape, 0, 0)
+    yield Wait(0.5)
+    check(not pres.get_visible() and w.view.page == 9, "Échap : sortie, la fenêtre est à la page 10")
+    out = os.path.join(TMP, "impression.pdf")
+    ok = printing.export_pdf(w, out)
+    check(ok and os.path.exists(out) and Document.open(out).n_pages == w.document.n_pages,
+          "impression (vers un PDF) : toutes les pages")
 
 
 @step

@@ -90,6 +90,8 @@ class Sidebar(Gtk.Box):
         self._add_page("thumbnails", "view-grid-symbolic", tr("Miniatures"), self._build_thumbs())
         self._add_page("outline", "view-list-bullet-symbolic", tr("Sommaire"), self._build_outline())
         self._add_page("annots", "calypso-note-symbolic", tr("Annotations"), self._build_annots())
+        self._add_page("signatures", "security-high-symbolic", tr("Signatures"), self._build_signatures())
+        self._buttons["signatures"].set_visible(False)
         self._add_page("results", "edit-find-symbolic", tr("Résultats de la recherche"), self._build_results())
         self._buttons["results"].set_visible(False)
         self._annots_stale = True
@@ -336,6 +338,27 @@ class Sidebar(Gtk.Box):
             return
         self.view.go_to(fresh.page, max(0.0, fresh.rect[1] - 40), remember=True)
         self.view.select_annot(fresh)
+
+    # -- signatures --------------------------------------------------------------------------------
+    def _build_signatures(self):
+        self.sig_list = Gtk.ListBox(css_classes=["navigation-sidebar"])
+        self.sig_list.connect("row-activated", self._sig_activated)
+        return Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=True, child=self.sig_list)
+
+    def set_signatures(self, sigs: list):
+        from .signatures import signature_row
+        clear_box(self.sig_list)
+        for sig in sigs:
+            self.sig_list.append(signature_row(sig))
+        self._buttons["signatures"].set_visible(bool(sigs))
+        if not sigs and self.current_page() == "signatures":
+            self.show_page("thumbnails")
+
+    def _sig_activated(self, _lb, row):
+        sig = row._sig
+        if sig.page >= 0:
+            top = max(0.0, sig.rect[1] - 40) if sig.rect else None
+            self.view.go_to(sig.page, top, remember=True)
 
     # -- résultats de la recherche ----------------------------------------------------------------
     def _build_results(self):
