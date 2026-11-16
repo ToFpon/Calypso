@@ -74,6 +74,13 @@
   </requires>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.0.3" date="2026-11-16">
+      <description>
+        <ul>
+          <li>New switch in Preferences → General: “Default PDF viewer”; when turned off, the previous application comes back</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.2" date="2026-11-15">
       <description>
         <ul>
