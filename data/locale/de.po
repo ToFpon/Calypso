@@ -33,8 +33,11 @@ msgid "Moteurs"
 msgstr "Engines"
 
 #: calypso/app.py:157
-msgid "Une visionneuse de documents PDF pour GNOME, avec les outils pour les modifier."
-msgstr "Ein PDF-Dokumentenbetrachter für GNOME, mit den Werkzeugen, um sie zu ändern."
+msgid ""
+"Une visionneuse de documents PDF pour GNOME, avec les outils pour les "
+"modifier."
+msgstr ""
+"Ein PDF-Dokumentenbetrachter für GNOME, mit den Werkzeugen, um sie zu ändern."
 
 #: calypso/backend/jobs.py:133 calypso/ui/properties.py:32
 msgid "Go"
@@ -193,14 +196,22 @@ msgid "Import impossible"
 msgstr "Import fehlgeschlagen"
 
 #: calypso/backend/signing.py:165
-msgid "Signature invalide : le document a été modifié après sa signature, ou la signature est abîmée"
-msgstr "Ungültige Signatur: Das Dokument wurde nach der Signatur geändert, oder die Signatur ist beschädigt"
+msgid ""
+"Signature invalide : le document a été modifié après sa signature, ou la "
+"signature est abîmée"
+msgstr ""
+"Ungültige Signatur: Das Dokument wurde nach der Signatur geändert, oder die "
+"Signatur ist beschädigt"
 
 #: calypso/backend/signing.py:170
-msgid "Signé par {0} — signature intacte, certificat non reconnu comme de confiance"
-msgstr "Signiert von {0} — Signatur intakt, Zertifikat nicht als vertrauenswürdig erkannt"
+msgid ""
+"Signé par {0} — signature intacte, certificat non reconnu comme de confiance"
+msgstr ""
+"Signiert von {0} — Signatur intakt, Zertifikat nicht als vertrauenswürdig "
+"erkannt"
 
-#: calypso/backend/signing.py:199 calypso/backend/signing.py:201 calypso/ui/signatures.py:180
+#: calypso/backend/signing.py:199 calypso/backend/signing.py:201
+#: calypso/ui/signatures.py:180
 msgid "La signature a échoué"
 msgstr "Signieren fehlgeschlagen"
 
@@ -213,24 +224,35 @@ msgid "Reprendre où on s'était arrêté"
 msgstr "Dort weitermachen, wo man aufgehört hat"
 
 #: calypso/features.py:26
-msgid "Un document rouvert revient à la page, au zoom et à la disposition qu'il avait"
-msgstr "Ein erneut geöffnetes Dokument kehrt zu Seite, Zoom und Anordnung zurück, die es hatte"
+msgid ""
+"Un document rouvert revient à la page, au zoom et à la disposition qu'il "
+"avait"
+msgstr ""
+"Ein erneut geöffnetes Dokument kehrt zu Seite, Zoom und Anordnung zurück, "
+"die es hatte"
 
 #: calypso/features.py:28
 msgid "Aperçu des liens"
 msgstr "Linkvorschau"
 
 #: calypso/features.py:29
-msgid "Le survol d'un lien vers une autre page du document montre cette page dans une bulle"
-msgstr "Beim Überfahren eines Links zu einer anderen Seite des Dokuments wird diese Seite in einer Blase gezeigt"
+msgid ""
+"Le survol d'un lien vers une autre page du document montre cette page dans "
+"une bulle"
+msgstr ""
+"Beim Überfahren eines Links zu einer anderen Seite des Dokuments wird diese "
+"Seite in einer Blase gezeigt"
 
 #: calypso/features.py:31
 msgid "Recharger un document modifié"
 msgstr "Geändertes Dokument neu laden"
 
 #: calypso/features.py:32
-msgid "Un document changé par un autre programme est relu tout seul, à la même page"
-msgstr "Ein von einem anderen Programm geändertes Dokument wird automatisch neu geladen, auf derselben Seite"
+msgid ""
+"Un document changé par un autre programme est relu tout seul, à la même page"
+msgstr ""
+"Ein von einem anderen Programm geändertes Dokument wird automatisch neu "
+"geladen, auf derselben Seite"
 
 #: calypso/ui/annotations.py:22
 msgid "Jaune"
@@ -264,15 +286,15 @@ msgstr "Auswählen"
 msgid "Note"
 msgstr "Notiz"
 
-#: calypso/ui/annotations.py:28 calypso/ui/window.py:783
+#: calypso/ui/annotations.py:28 calypso/ui/window.py:785
 msgid "Surligner"
 msgstr "Hervorheben"
 
-#: calypso/ui/annotations.py:29 calypso/ui/window.py:783
+#: calypso/ui/annotations.py:29 calypso/ui/window.py:785
 msgid "Souligner"
 msgstr "Unterstreichen"
 
-#: calypso/ui/annotations.py:30 calypso/ui/window.py:784
+#: calypso/ui/annotations.py:30 calypso/ui/window.py:786
 msgid "Barrer"
 msgstr "Durchstreichen"
 
@@ -312,7 +334,8 @@ msgstr "Wellenlinie"
 msgid "Trait"
 msgstr "Linie"
 
-#: calypso/ui/annotations.py:39 calypso/ui/signatures.py:142 calypso/ui/tools.py:280 calypso/ui/tools.py:282
+#: calypso/ui/annotations.py:39 calypso/ui/signatures.py:142
+#: calypso/ui/tools.py:280 calypso/ui/tools.py:282
 msgid "Texte"
 msgstr "Text"
 
@@ -348,11 +371,12 @@ msgstr "Löschen"
 msgid "Parcourir…"
 msgstr "Durchsuchen …"
 
-#: calypso/ui/common.py:378 calypso/ui/organizer.py:45 calypso/ui/progress.py:28 calypso/ui/signatures.py:81
+#: calypso/ui/common.py:378 calypso/ui/organizer.py:45
+#: calypso/ui/progress.py:28 calypso/ui/signatures.py:81
 msgid "Annuler"
 msgstr "Abbrechen"
 
-#: calypso/ui/organizer.py:50 calypso/ui/window.py:228
+#: calypso/ui/organizer.py:50 calypso/ui/window.py:230
 msgid "Enregistrer sous…"
 msgstr "Speichern unter …"
 
@@ -360,7 +384,8 @@ msgstr "Speichern unter …"
 msgid "Réorganisation des pages"
 msgstr "Seiten werden neu angeordnet"
 
-#: calypso/ui/organizer.py:319 calypso/ui/shortcuts.py:21 calypso/ui/signatures.py:151 calypso/ui/tools.py:77
+#: calypso/ui/organizer.py:319 calypso/ui/shortcuts.py:21
+#: calypso/ui/signatures.py:151 calypso/ui/tools.py:77
 msgid "Enregistrer sous"
 msgstr "Speichern unter"
 
@@ -380,11 +405,11 @@ msgstr "Seiten organisieren"
 msgid "Remplacer le document"
 msgstr "Dokument ersetzen"
 
-#: calypso/ui/organizer.py:59 calypso/ui/window.py:240
+#: calypso/ui/organizer.py:59 calypso/ui/window.py:242
 msgid "Pivoter à gauche"
 msgstr "Nach links drehen"
 
-#: calypso/ui/organizer.py:60 calypso/ui/window.py:241
+#: calypso/ui/organizer.py:60 calypso/ui/window.py:243
 msgid "Pivoter à droite"
 msgstr "Nach rechts drehen"
 
@@ -462,99 +487,124 @@ msgid_plural "{0} fichiers créés"
 msgstr[0] "{0} Datei erstellt"
 msgstr[1] "{0} Dateien erstellt"
 
-#: calypso/ui/preferences.py:49
+#: calypso/ui/preferences.py:73
 msgid "Style"
 msgstr "Stil"
 
-#: calypso/ui/preferences.py:42 calypso/ui/window.py:247
+#: calypso/ui/preferences.py:61 calypso/ui/window.py:249
 msgid "Préférences"
 msgstr "Einstellungen"
 
-#: calypso/ui/preferences.py:47
+#: calypso/ui/preferences.py:66
 msgid "Général"
 msgstr "Allgemein"
 
-#: calypso/ui/preferences.py:48
+#: calypso/ui/preferences.py:68
+msgid "Visionneuse PDF par défaut"
+msgstr "Standard-PDF-Betrachter"
+
+#: calypso/ui/preferences.py:69
+msgid ""
+"Les PDF s'ouvrent avec Calypso ; coupé, l'application d'avant reprend la "
+"main."
+msgstr ""
+"PDF-Dateien öffnen sich mit Calypso; ausgeschaltet übernimmt wieder die "
+"vorherige Anwendung."
+
+#: calypso/ui/preferences.py:72
 msgid "Apparence"
 msgstr "Erscheinungsbild"
 
-#: calypso/ui/preferences.py:49 calypso/ui/preferences.py:54
+#: calypso/ui/preferences.py:73 calypso/ui/preferences.py:78
 msgid "Comme le système"
 msgstr "Wie das System"
 
-#: calypso/ui/preferences.py:49
+#: calypso/ui/preferences.py:73
 msgid "Clair"
 msgstr "Hell"
 
-#: calypso/ui/preferences.py:49
+#: calypso/ui/preferences.py:73
 msgid "Sombre"
 msgstr "Dunkel"
 
-#: calypso/ui/preferences.py:54
+#: calypso/ui/preferences.py:78
 msgid "Langue"
 msgstr "Sprache"
 
-#: calypso/ui/preferences.py:55
+#: calypso/ui/preferences.py:79
 msgid "Appliquée au prochain démarrage"
 msgstr "Wird beim nächsten Start übernommen"
 
-#: calypso/ui/preferences.py:57
+#: calypso/ui/preferences.py:81
 msgid "Nouveaux documents"
 msgstr "Neue Dokumente"
 
-#: calypso/ui/preferences.py:58
-msgid "Réglages d'un document ouvert pour la première fois ; ensuite, chaque document garde les siens"
-msgstr "Einstellungen für ein zum ersten Mal geöffnetes Dokument; danach behält jedes Dokument seine eigenen"
+#: calypso/ui/preferences.py:82
+msgid ""
+"Réglages d'un document ouvert pour la première fois ; ensuite, chaque "
+"document garde les siens"
+msgstr ""
+"Einstellungen für ein zum ersten Mal geöffnetes Dokument; danach behält "
+"jedes Dokument seine eigenen"
 
-#: calypso/ui/preferences.py:60 calypso/ui/window.py:154
+#: calypso/ui/preferences.py:84 calypso/ui/window.py:156
 msgid "Zoom"
 msgstr "Zoom"
 
-#: calypso/ui/preferences.py:62 calypso/ui/window.py:234
+#: calypso/ui/preferences.py:86 calypso/ui/window.py:236
 msgid "Défilement continu"
 msgstr "Fortlaufend"
 
-#: calypso/ui/preferences.py:63 calypso/ui/window.py:235
+#: calypso/ui/preferences.py:87 calypso/ui/window.py:237
 msgid "Deux pages côte à côte"
 msgstr "Zwei Seiten nebeneinander"
 
-#: calypso/ui/preferences.py:64 calypso/ui/shortcuts.py:49 calypso/ui/window.py:237
+#: calypso/ui/preferences.py:88 calypso/ui/shortcuts.py:49
+#: calypso/ui/window.py:239
 msgid "Mode nuit"
 msgstr "Nachtmodus"
 
-#: calypso/ui/preferences.py:64
+#: calypso/ui/preferences.py:88
 msgid "Couleurs inversées : texte clair sur fond sombre"
 msgstr "Invertierte Farben: heller Text auf dunklem Hintergrund"
 
-#: calypso/ui/preferences.py:66 calypso/ui/sidebar.py:92
+#: calypso/ui/preferences.py:90 calypso/ui/sidebar.py:92
 msgid "Annotations"
 msgstr "Anmerkungen"
 
-#: calypso/ui/preferences.py:67
+#: calypso/ui/preferences.py:91
 msgid "Auteur des annotations"
 msgstr "Autor der Anmerkungen"
 
-#: calypso/ui/preferences.py:78
+#: calypso/ui/preferences.py:102
 msgid "Fonctionnalités"
 msgstr "Funktionen"
 
-#: calypso/ui/preferences.py:80
-msgid "Chaque fonctionnalité s'active ou se coupe tout de suite, sans redémarrer Calypso"
-msgstr "Jede Funktion wird sofort ein- oder ausgeschaltet, ohne Calypso neu zu starten"
+#: calypso/ui/preferences.py:104
+msgid ""
+"Chaque fonctionnalité s'active ou se coupe tout de suite, sans redémarrer "
+"Calypso"
+msgstr ""
+"Jede Funktion wird sofort ein- oder ausgeschaltet, ohne Calypso neu zu "
+"starten"
 
-#: calypso/ui/preferences.py:60 calypso/ui/window.py:277
+#: calypso/ui/preferences.py:84 calypso/ui/window.py:279
 msgid "Ajuster à la largeur"
 msgstr "Breite anpassen"
 
-#: calypso/ui/preferences.py:60 calypso/ui/window.py:278
+#: calypso/ui/preferences.py:84 calypso/ui/window.py:280
 msgid "Ajuster à la page"
 msgstr "Seite anpassen"
 
-#: calypso/ui/preferences.py:71
+#: calypso/ui/preferences.py:48
+msgid "{0} n'est pas installé (lancé depuis les sources)"
+msgstr "{0} ist nicht installiert (aus dem Quellcode gestartet)"
+
+#: calypso/ui/preferences.py:95
 msgid "Vide : le nom de la session ({0})"
 msgstr "Leer: der Name der Sitzung ({0})"
 
-#: calypso/ui/presentation.py:58 calypso/ui/window.py:243
+#: calypso/ui/presentation.py:58 calypso/ui/window.py:245
 msgid "Présentation"
 msgstr "Präsentation"
 
@@ -578,7 +628,8 @@ msgstr "US Legal"
 msgid "Tabloïd"
 msgstr "Tabloid"
 
-#: calypso/ui/properties.py:49 calypso/ui/shortcuts.py:25 calypso/ui/window.py:246
+#: calypso/ui/properties.py:49 calypso/ui/shortcuts.py:25
+#: calypso/ui/window.py:248
 msgid "Propriétés du document"
 msgstr "Dokumenteigenschaften"
 
@@ -720,15 +771,16 @@ msgstr "Suche und Text"
 msgid "Affichage"
 msgstr "Ansicht"
 
-#: calypso/ui/shortcuts.py:18 calypso/ui/welcome.py:29 calypso/ui/window.py:438
+#: calypso/ui/shortcuts.py:18 calypso/ui/welcome.py:29 calypso/ui/window.py:440
 msgid "Ouvrir un document"
 msgstr "Ein Dokument öffnen"
 
-#: calypso/ui/shortcuts.py:19 calypso/ui/window.py:226
+#: calypso/ui/shortcuts.py:19 calypso/ui/window.py:228
 msgid "Nouvelle fenêtre"
 msgstr "Neues Fenster"
 
-#: calypso/ui/shortcuts.py:20 calypso/ui/window.py:227 calypso/ui/window.py:1248 calypso/ui/window.py:1135
+#: calypso/ui/shortcuts.py:20 calypso/ui/window.py:229
+#: calypso/ui/window.py:1253 calypso/ui/window.py:1137
 msgid "Enregistrer"
 msgstr "Speichern"
 
@@ -736,7 +788,7 @@ msgstr "Speichern"
 msgid "Annuler / rétablir (annotations, formulaires)"
 msgstr "Rückgängig / Wiederholen (Anmerkungen, Formulare)"
 
-#: calypso/ui/shortcuts.py:23 calypso/ui/window.py:230
+#: calypso/ui/shortcuts.py:23 calypso/ui/window.py:232
 msgid "Recharger"
 msgstr "Neu laden"
 
@@ -788,7 +840,7 @@ msgstr "Nächster / vorheriger Treffer"
 msgid "Copier le texte sélectionné"
 msgstr "Ausgewählten Text kopieren"
 
-#: calypso/ui/shortcuts.py:41 calypso/ui/window.py:792
+#: calypso/ui/shortcuts.py:41 calypso/ui/window.py:794
 msgid "Tout sélectionner"
 msgstr "Alles auswählen"
 
@@ -816,7 +868,7 @@ msgstr "Nach links / rechts drehen"
 msgid "Panneau latéral"
 msgstr "Seitenleiste"
 
-#: calypso/ui/shortcuts.py:51 calypso/ui/window.py:242
+#: calypso/ui/shortcuts.py:51 calypso/ui/window.py:244
 msgid "Plein écran"
 msgstr "Vollbild"
 
@@ -824,7 +876,7 @@ msgstr "Vollbild"
 msgid "Présentation (Échap pour sortir)"
 msgstr "Präsentation (Esc zum Beenden)"
 
-#: calypso/ui/shortcuts.py:53 calypso/ui/window.py:248
+#: calypso/ui/shortcuts.py:53 calypso/ui/window.py:250
 msgid "Raccourcis clavier"
 msgstr "Tastenkürzel"
 
@@ -901,10 +953,18 @@ msgid "Aucun certificat de signature"
 msgstr "Kein Signaturzertifikat"
 
 #: calypso/ui/signatures.py:110
-msgid "Pour signer, il faut un certificat personnel (fichier .p12 ou .pfx, fourni par votre administration, votre entreprise ou une autorité de certification). Les certificats installés dans Firefox sont aussi utilisés."
-msgstr "Zum Signieren braucht es ein persönliches Zertifikat (eine .p12- oder .pfx-Datei von Ihrer Verwaltung, Ihrem Unternehmen oder einer Zertifizierungsstelle). In Firefox installierte Zertifikate werden ebenfalls verwendet."
+msgid ""
+"Pour signer, il faut un certificat personnel (fichier .p12 ou .pfx, fourni "
+"par votre administration, votre entreprise ou une autorité de "
+"certification). Les certificats installés dans Firefox sont aussi utilisés."
+msgstr ""
+"Zum Signieren braucht es ein persönliches Zertifikat (eine .p12- oder .pfx-"
+"Datei von Ihrer Verwaltung, Ihrem Unternehmen oder einer "
+"Zertifizierungsstelle). In Firefox installierte Zertifikate werden ebenfalls "
+"verwendet."
 
-#: calypso/ui/signatures.py:114 calypso/ui/signatures.py:133 calypso/ui/window.py:266
+#: calypso/ui/signatures.py:114 calypso/ui/signatures.py:133
+#: calypso/ui/window.py:268
 msgid "Importer un certificat…"
 msgstr "Ein Zertifikat importieren …"
 
@@ -948,13 +1008,16 @@ msgstr "Grund (optional)"
 msgid "Lieu (facultatif)"
 msgstr "Ort (optional)"
 
-#: calypso/ui/signatures.py:149 calypso/ui/tools.py:166 calypso/ui/tools.py:331 calypso/ui/tools.py:465
+#: calypso/ui/signatures.py:149 calypso/ui/tools.py:166 calypso/ui/tools.py:331
+#: calypso/ui/tools.py:465
 msgid "Résultat"
 msgstr "Ergebnis"
 
 #: calypso/ui/signatures.py:149
 msgid "Une copie signée est créée ; le document d'origine reste tel quel."
-msgstr "Es wird eine signierte Kopie erstellt; das Originaldokument bleibt unverändert."
+msgstr ""
+"Es wird eine signierte Kopie erstellt; das Originaldokument bleibt "
+"unverändert."
 
 #: calypso/ui/signatures.py:151
 msgid "signé"
@@ -1104,7 +1167,7 @@ msgstr "Bild (PNG, JPEG, SVG …)"
 msgid "Taille (points)"
 msgstr "Größe (Punkt)"
 
-#: calypso/ui/tools.py:300 calypso/ui/window.py:1115
+#: calypso/ui/tools.py:300 calypso/ui/window.py:1117
 msgid "Couleur"
 msgstr "Farbe"
 
@@ -1177,8 +1240,12 @@ msgid "Ordre des documents"
 msgstr "Reihenfolge der Dokumente"
 
 #: calypso/ui/tools.py:158
-msgid "Glissez les lignes pour changer l'ordre. Indiquez les pages à garder de chaque fichier."
-msgstr "Ziehen Sie die Zeilen, um die Reihenfolge zu ändern. Geben Sie die zu behaltenden Seiten jeder Datei an."
+msgid ""
+"Glissez les lignes pour changer l'ordre. Indiquez les pages à garder de "
+"chaque fichier."
+msgstr ""
+"Ziehen Sie die Zeilen, um die Reihenfolge zu ändern. Geben Sie die zu "
+"behaltenden Seiten jeder Datei an."
 
 #: calypso/ui/tools.py:160
 msgid "Ajouter des PDF…"
@@ -1226,7 +1293,8 @@ msgstr "Glätten (Seiten werden zu Bildern)"
 
 #: calypso/ui/tools.py:324
 msgid "Le filigrane ne peut plus être retiré ; texte non sélectionnable"
-msgstr "Das Wasserzeichen lässt sich nicht mehr entfernen; Text nicht auswählbar"
+msgstr ""
+"Das Wasserzeichen lässt sich nicht mehr entfernen; Text nicht auswählbar"
 
 #: calypso/ui/tools.py:332
 msgid "filigrane"
@@ -1241,10 +1309,14 @@ msgid "Mot de passe d'ouverture"
 msgstr "Passwort zum Öffnen"
 
 #: calypso/ui/tools.py:439
-msgid "Chiffrement AES-256. Sans ce mot de passe, le document ne s'ouvre plus : conservez-le en lieu sûr."
-msgstr "AES-256-Verschlüsselung. Ohne dieses Passwort lässt sich das Dokument nicht mehr öffnen: bewahren Sie es sicher auf."
+msgid ""
+"Chiffrement AES-256. Sans ce mot de passe, le document ne s'ouvre plus : "
+"conservez-le en lieu sûr."
+msgstr ""
+"AES-256-Verschlüsselung. Ohne dieses Passwort lässt sich das Dokument nicht "
+"mehr öffnen: bewahren Sie es sicher auf."
 
-#: calypso/ui/tools.py:441 calypso/ui/window.py:499
+#: calypso/ui/tools.py:441 calypso/ui/window.py:501
 msgid "Mot de passe"
 msgstr "Passwort"
 
@@ -1293,8 +1365,10 @@ msgid "Compression de {0}"
 msgstr "{0} wird komprimiert"
 
 #: calypso/ui/tools.py:198
-msgid "Ce ne sont pas des PDF lisibles, ou ils sont protégés par un mot de passe."
-msgstr "Es sind keine lesbaren PDFs, oder sie sind durch ein Passwort geschützt."
+msgid ""
+"Ce ne sont pas des PDF lisibles, ou ils sont protégés par un mot de passe."
+msgstr ""
+"Es sind keine lesbaren PDFs, oder sie sind durch ein Passwort geschützt."
 
 #: calypso/ui/tools.py:250
 msgid "Fusion de {0} PDF"
@@ -1362,7 +1436,7 @@ msgstr "Bilder"
 msgid "Ouvrir dans une nouvelle fenêtre"
 msgstr "In neuem Fenster öffnen"
 
-#: calypso/ui/welcome.py:112 calypso/ui/window.py:229
+#: calypso/ui/welcome.py:112 calypso/ui/window.py:231
 msgid "Afficher dans le dossier"
 msgstr "Im Ordner anzeigen"
 
@@ -1370,7 +1444,7 @@ msgstr "Im Ordner anzeigen"
 msgid "Retirer de la liste"
 msgstr "Aus der Liste entfernen"
 
-#: calypso/ui/welcome.py:32 calypso/ui/window.py:225 calypso/ui/window.py:174
+#: calypso/ui/welcome.py:32 calypso/ui/window.py:227 calypso/ui/window.py:176
 msgid "Ouvrir…"
 msgstr "Öffnen …"
 
@@ -1382,7 +1456,7 @@ msgstr "Zuletzt geöffnete Dokumente"
 msgid "Glissez un PDF dans cette fenêtre, ou choisissez-en un"
 msgstr "Ziehen Sie eine PDF-Datei in dieses Fenster oder wählen Sie eine aus"
 
-#: calypso/ui/window.py:1291
+#: calypso/ui/window.py:1296
 msgid "Ce n'est pas un document PDF valide, ou il est abîmé."
 msgstr "Dies ist kein gültiges PDF-Dokument, oder es ist beschädigt."
 
@@ -1390,284 +1464,293 @@ msgstr "Dies ist kein gültiges PDF-Dokument, oder es ist beschädigt."
 msgid "Tous les fichiers"
 msgstr "Alle Dateien"
 
-#: calypso/ui/window.py:1286
+#: calypso/ui/window.py:1291
 msgid "Le fichier n'existe plus."
 msgstr "Die Datei existiert nicht mehr."
 
-#: calypso/ui/window.py:1288
+#: calypso/ui/window.py:1293
 msgid "Accès refusé."
 msgstr "Zugriff verweigert."
 
-#: calypso/ui/window.py:1290
+#: calypso/ui/window.py:1295
 msgid "Le document n'a aucune page."
 msgstr "Das Dokument hat keine Seiten."
 
-#: calypso/ui/window.py:231
+#: calypso/ui/window.py:233
 msgid "Imprimer…"
 msgstr "Drucken …"
 
-#: calypso/ui/window.py:236
+#: calypso/ui/window.py:238
 msgid "Première page seule"
 msgstr "Erste Seite allein"
 
-#: calypso/ui/window.py:249
+#: calypso/ui/window.py:251
 msgid "À propos de Calypso"
 msgstr "Über Calypso"
 
-#: calypso/ui/window.py:256
+#: calypso/ui/window.py:258
 msgid "Organiser les pages…"
 msgstr "Seiten organisieren …"
 
-#: calypso/ui/window.py:257
+#: calypso/ui/window.py:259
 msgid "Fusionner avec d'autres PDF…"
 msgstr "Mit anderen PDFs zusammenfügen …"
 
-#: calypso/ui/window.py:260
+#: calypso/ui/window.py:262
 msgid "Compresser…"
 msgstr "Komprimieren …"
 
-#: calypso/ui/window.py:261
+#: calypso/ui/window.py:263
 msgid "Filigrane…"
 msgstr "Wasserzeichen …"
 
-#: calypso/ui/window.py:262 calypso/ui/window.py:1042
+#: calypso/ui/window.py:264 calypso/ui/window.py:1044
 msgid "Caviarder…"
 msgstr "Schwärzen …"
 
-#: calypso/ui/window.py:265
+#: calypso/ui/window.py:267
 msgid "Signer…"
 msgstr "Signieren …"
 
-#: calypso/ui/window.py:269
+#: calypso/ui/window.py:271
 msgid "Protéger par un mot de passe…"
 msgstr "Mit einem Passwort schützen …"
 
-#: calypso/ui/window.py:270
+#: calypso/ui/window.py:272
 msgid "Retirer le mot de passe…"
 msgstr "Passwort entfernen …"
 
-#: calypso/ui/window.py:287
+#: calypso/ui/window.py:289
 msgid "Zoom avant"
 msgstr "Vergrößern"
 
-#: calypso/ui/window.py:288
+#: calypso/ui/window.py:290
 msgid "Zoom arrière"
 msgstr "Verkleinern"
 
-#: calypso/ui/window.py:504
+#: calypso/ui/window.py:506
 msgid "Document protégé"
 msgstr "Geschütztes Dokument"
 
-#: calypso/ui/window.py:506
+#: calypso/ui/window.py:508
 msgid "Déverrouiller"
 msgstr "Entsperren"
 
-#: calypso/ui/window.py:835
+#: calypso/ui/window.py:837
 msgid "Enregistrer l'image"
 msgstr "Bild speichern"
 
-#: calypso/ui/window.py:846
+#: calypso/ui/window.py:848
 msgid "Image copiée"
 msgstr "Bild kopiert"
 
-#: calypso/ui/window.py:935
+#: calypso/ui/window.py:937
 msgid "Enregistrer d'abord ?"
 msgstr "Zuerst speichern?"
 
-#: calypso/ui/window.py:936
-msgid "Les outils travaillent sur le fichier : vos annotations et les champs remplis doivent d'abord être enregistrés."
-msgstr "Die Werkzeuge arbeiten mit der Datei: Ihre Anmerkungen und ausgefüllten Felder müssen zuerst gespeichert werden."
+#: calypso/ui/window.py:938
+msgid ""
+"Les outils travaillent sur le fichier : vos annotations et les champs "
+"remplis doivent d'abord être enregistrés."
+msgstr ""
+"Die Werkzeuge arbeiten mit der Datei: Ihre Anmerkungen und ausgefüllten "
+"Felder müssen zuerst gespeichert werden."
 
-#: calypso/ui/window.py:939
+#: calypso/ui/window.py:941
 msgid "Enregistrer et continuer"
 msgstr "Speichern und fortfahren"
 
-#: calypso/ui/window.py:1083
+#: calypso/ui/window.py:1085
 msgid "Enregistrer le document caviardé"
 msgstr "Geschwärztes Dokument speichern"
 
-#: calypso/ui/window.py:1245
-msgid "Les annotations et les champs remplis seront perdus si vous n'enregistrez pas."
-msgstr "Anmerkungen und ausgefüllte Felder gehen verloren, wenn Sie nicht speichern."
+#: calypso/ui/window.py:1250
+msgid ""
+"Les annotations et les champs remplis seront perdus si vous n'enregistrez "
+"pas."
+msgstr ""
+"Anmerkungen und ausgefüllte Felder gehen verloren, wenn Sie nicht speichern."
 
-#: calypso/ui/window.py:1247
+#: calypso/ui/window.py:1252
 msgid "Ne pas enregistrer"
 msgstr "Nicht speichern"
 
-#: calypso/ui/window.py:133
+#: calypso/ui/window.py:135
 msgid "Panneau latéral (F9)"
 msgstr "Seitenleiste (F9)"
 
-#: calypso/ui/window.py:137
+#: calypso/ui/window.py:139
 msgid "Numéro de la page (Ctrl+L)"
 msgstr "Seitennummer (Strg+L)"
 
-#: calypso/ui/window.py:151
+#: calypso/ui/window.py:153
 msgid "Menu principal"
 msgstr "Hauptmenü"
 
-#: calypso/ui/window.py:156
+#: calypso/ui/window.py:158
 msgid "Rechercher (Ctrl+F)"
 msgstr "Suchen (Strg+F)"
 
-#: calypso/ui/window.py:160
+#: calypso/ui/window.py:162
 msgid "Annoter"
 msgstr "Kommentieren"
 
-#: calypso/ui/window.py:162
+#: calypso/ui/window.py:164
 msgid "Outils"
 msgstr "Werkzeuge"
 
-#: calypso/ui/window.py:193
+#: calypso/ui/window.py:195
 msgid "Ce document contient un formulaire à remplir"
 msgstr "Dieses Dokument enthält ein auszufüllendes Formular"
 
-#: calypso/ui/window.py:194
+#: calypso/ui/window.py:196
 msgid "Compris"
 msgstr "Verstanden"
 
-#: calypso/ui/window.py:196
+#: calypso/ui/window.py:198
 msgid "Détails"
 msgstr "Details"
 
-#: calypso/ui/window.py:486 calypso/ui/window.py:492
+#: calypso/ui/window.py:488 calypso/ui/window.py:494
 msgid "Impossible d'ouvrir le document"
 msgstr "Das Dokument kann nicht geöffnet werden"
 
-#: calypso/ui/window.py:501
+#: calypso/ui/window.py:503
 msgid "« {0} » est protégé par un mot de passe."
 msgstr "„{0}“ ist durch ein Passwort geschützt."
 
-#: calypso/ui/window.py:771
+#: calypso/ui/window.py:773
 msgid "Enregistrer l'image sous…"
 msgstr "Bild speichern unter …"
 
-#: calypso/ui/window.py:772
+#: calypso/ui/window.py:774
 msgid "Copier l'image"
 msgstr "Bild kopieren"
 
-#: calypso/ui/window.py:778
+#: calypso/ui/window.py:780
 msgid "Modifier l'annotation…"
 msgstr "Anmerkung bearbeiten …"
 
-#: calypso/ui/window.py:779
+#: calypso/ui/window.py:781
 msgid "Supprimer l'annotation"
 msgstr "Anmerkung löschen"
 
-#: calypso/ui/window.py:791
+#: calypso/ui/window.py:793
 msgid "Copier"
 msgstr "Kopieren"
 
-#: calypso/ui/window.py:917
+#: calypso/ui/window.py:919
 msgid "Document enregistré"
 msgstr "Dokument gespeichert"
 
-#: calypso/ui/window.py:953
+#: calypso/ui/window.py:955
 msgid "Ouvrir le dossier"
 msgstr "Ordner öffnen"
 
-#: calypso/ui/window.py:955
+#: calypso/ui/window.py:957
 msgid "Ouvrir"
 msgstr "Öffnen"
 
-#: calypso/ui/window.py:1036
+#: calypso/ui/window.py:1038
 msgid "Tout effacer"
 msgstr "Alles löschen"
 
-#: calypso/ui/window.py:1039
+#: calypso/ui/window.py:1041
 msgid "Terminer"
 msgstr "Fertig"
 
-#: calypso/ui/window.py:1065
+#: calypso/ui/window.py:1067
 msgid "Tracez les zones à masquer ; un clic dans une zone la retire."
-msgstr "Ziehen Sie die zu verdeckenden Bereiche auf; ein Klick in einen Bereich entfernt ihn."
+msgstr ""
+"Ziehen Sie die zu verdeckenden Bereiche auf; ein Klick in einen Bereich "
+"entfernt ihn."
 
-#: calypso/ui/window.py:1081
+#: calypso/ui/window.py:1083
 msgid "Caviardage"
 msgstr "Schwärzung"
 
-#: calypso/ui/window.py:1083
+#: calypso/ui/window.py:1085
 msgid "caviardé"
 msgstr "geschwärzt"
 
-#: calypso/ui/window.py:503
+#: calypso/ui/window.py:505
 msgid "Mot de passe incorrect."
 msgstr "Falsches Passwort."
 
-#: calypso/ui/window.py:823
+#: calypso/ui/window.py:825
 msgid "{0} - image page {1}.png"
 msgstr "{0} - Bild Seite {1}.png"
 
-#: calypso/ui/window.py:832
+#: calypso/ui/window.py:834
 msgid "Image enregistrée"
 msgstr "Bild gespeichert"
 
-#: calypso/ui/window.py:901
+#: calypso/ui/window.py:903
 msgid "Impossible d'enregistrer le document"
 msgstr "Das Dokument kann nicht gespeichert werden"
 
-#: calypso/ui/window.py:951
+#: calypso/ui/window.py:953
 msgid "« {0} » créé"
 msgstr "„{0}“ erstellt"
 
-#: calypso/ui/window.py:1000
+#: calypso/ui/window.py:1002
 msgid "Tracez sur la page l'emplacement de la signature"
 msgstr "Ziehen Sie auf der Seite den Platz der Signatur auf"
 
-#: calypso/ui/window.py:1130
+#: calypso/ui/window.py:1132
 msgid "Annuler (Ctrl+Z)"
 msgstr "Rückgängig (Strg+Z)"
 
-#: calypso/ui/window.py:1132
+#: calypso/ui/window.py:1134
 msgid "Rétablir (Ctrl+Maj+Z)"
 msgstr "Wiederholen (Umschalt+Strg+Z)"
 
-#: calypso/ui/window.py:1244
+#: calypso/ui/window.py:1249
 msgid "Enregistrer les modifications de « {0} » ?"
 msgstr "Änderungen an „{0}“ speichern?"
 
-#: calypso/ui/window.py:650
+#: calypso/ui/window.py:652
 msgid "sur {0}"
 msgstr "von {0}"
 
-#: calypso/ui/window.py:652
+#: calypso/ui/window.py:654
 msgid "({0} sur {1})"
 msgstr "({0} von {1})"
 
-#: calypso/ui/window.py:748
+#: calypso/ui/window.py:750
 msgid "Fichier introuvable"
 msgstr "Datei nicht gefunden"
 
-#: calypso/ui/window.py:766
+#: calypso/ui/window.py:768
 msgid "Ouvrir le lien"
 msgstr "Link öffnen"
 
-#: calypso/ui/window.py:767
+#: calypso/ui/window.py:769
 msgid "Copier l'adresse du lien"
 msgstr "Linkadresse kopieren"
 
-#: calypso/ui/window.py:834
+#: calypso/ui/window.py:836
 msgid "Impossible d'enregistrer l'image"
 msgstr "Das Bild kann nicht gespeichert werden"
 
-#: calypso/ui/window.py:856
+#: calypso/ui/window.py:858
 msgid "« {0} » retiré de la liste"
 msgstr "„{0}“ aus der Liste entfernt"
 
-#: calypso/ui/window.py:1066
+#: calypso/ui/window.py:1068
 msgid "{0} zone à masquer définitivement"
 msgid_plural "{0} zones à masquer définitivement"
 msgstr[0] "{0} Bereich wird endgültig verdeckt"
 msgstr[1] "{0} Bereiche werden endgültig verdeckt"
 
-#: calypso/ui/window.py:1082
+#: calypso/ui/window.py:1084
 msgid "pages touchées converties en images"
 msgstr "betroffene Seiten in Bilder umgewandelt"
 
-#: calypso/ui/window.py:763
+#: calypso/ui/window.py:765
 msgid "Aller à la page {0}"
 msgstr "Zu Seite {0} gehen"
 
-#: calypso/ui/window.py:973
+#: calypso/ui/window.py:975
 msgid "Impossible de rétablir l'original"
 msgstr "Das Original kann nicht wiederhergestellt werden"

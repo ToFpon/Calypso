@@ -146,6 +146,14 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
   l'écran, rendu dans un fil (page + voisines), b / w écran noir / blanc, numéro + Entrée. Impression
   (`ui/printing.py`) : Gtk.PrintOperation, `render_for_printing` (vectoriel), quart de tour si l'orientation
   du papier diffère ; `export_pdf` pour les tests.
+- Application par défaut (Préférences → Général, demande de Tof, comme l'interrupteur d'Odysseus) : `defaultapp.py`
+  (même module dans Calypso, Nausicaa et Télémaque, seuls `TYPES` changent) — activé : `set_default_app` sur
+  chaque type (alias de mimeapps.list compris, lignes de « <bureau>-mimeapps.list » retirées, repris
+  d'Odysseus), application d'avant notée par type (`previous_defaults`) ; coupé : elle revient, sinon
+  `reset_type_associations` + nos lignes retirées. État = celui du système (`MAIN`). Grisé sans lanceur
+  installé (lancé depuis les sources). Testé : `test_defaultapp` (vrais mimeapps.list, processus à part : GIO
+  garde les dossiers XDG du premier usage ; lanceur copié avec Exec=true, GIO ignore un Exec introuvable).
+  Types : les 4 PDF du lanceur.
 
 ## Publication (comme Nausicaa)
 
