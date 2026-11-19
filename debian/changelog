@@ -1,3 +1,10 @@
+calypso-pdf (1.0.4~noble1) noble; urgency=medium
+
+  * Le processus s'appelle « calypso-pdf », comme la commande : le
+    Moniteur système affiche de nouveau l'icône de Calypso.
+
+ -- Tof <nourpon@gmail.com>  Thu, 19 Nov 2026 22:27:35 +0000
+
 calypso-pdf (1.0.3~noble1) noble; urgency=medium
 
   * Nouvel interrupteur dans Préférences → Général : « Visionneuse PDF par
