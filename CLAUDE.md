@@ -157,7 +157,9 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
 
 ## Publication (comme Nausicaa)
 
-Nom du PAQUET et de la COMMANDE : `calypso-pdf` (depuis 1.0.1). Ubuntu / Debian ont déjà un paquet
+Nom du PAQUET, de la COMMANDE et du PROCESSUS : `calypso-pdf` (depuis 1.0.1 ; processus depuis 1.0.4 — le
+Moniteur système trouve l'icône en comparant le nom du processus à l'Exec du .desktop : avec « calypso », pas
+d'icône, vu chez Tof). Ubuntu / Debian ont déjà un paquet
 « calypso » (serveur CalDAV : /usr/bin/calypso, calypso.1, module Python `calypso` dans dist-packages) en
 version 2.1, qu'apt installait à la place de la 1.0.0 (vu chez Tof). L'application reste « Calypso »
 (menu, fenêtre, site), identifiant io.github.calypso.Calypso et réglages inchangés ; code privé dans

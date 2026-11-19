@@ -166,7 +166,9 @@ class CalypsoApp(Adw.Application):
 
 
 def _process_name(name: str):
-    """Nom du processus pour le noyau : « calypso » dans le Moniteur système, ps, killall."""
+    """Nom du processus pour le noyau : « calypso-pdf » dans le Moniteur système, ps, killall. DOIT être le nom de
+    la commande du .desktop (Exec=calypso-pdf) : le Moniteur système retrouve l'icône d'une application par ce nom ;
+    avec « calypso » (avant 1.0.4), pas d'icône (vu chez Tof)."""
     try:
         import ctypes
         libc = ctypes.CDLL(None, use_errno=True)
@@ -176,7 +178,7 @@ def _process_name(name: str):
 
 
 def main(argv=None) -> int:
-    _process_name("calypso")
+    _process_name("calypso-pdf")
     import faulthandler
     faulthandler.enable(all_threads=True)
     GLib.set_prgname(APP_ID)
