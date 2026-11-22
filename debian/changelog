@@ -1,3 +1,11 @@
+calypso-pdf (1.0.5~noble1) noble; urgency=medium
+
+  * Ouvert depuis Odysseus ou « Ouvrir avec », le document s'affiche
+    directement : la page d'accueil ne passe plus une fraction de seconde
+    avant.
+
+ -- Tof <nourpon@gmail.com>  Sun, 22 Nov 2026 22:53:08 +0000
+
 calypso-pdf (1.0.4~noble1) noble; urgency=medium
 
   * Le processus s'appelle « calypso-pdf », comme la commande : le
