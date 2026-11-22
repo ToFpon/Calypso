@@ -172,6 +172,9 @@ class MainWindow(Adw.ApplicationWindow):
         spinner = Gtk.Spinner(spinning=True, width_request=32, height_request=32,
                               halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER)
         self.stack.add_named(spinner, "loading")
+        # page vide le temps de lire le document : ouvert de l'extérieur (Odysseus, « Ouvrir avec »), l'accueil
+        # passait une fraction de seconde avant le document (vu chez Tof, comme dans Argos)
+        self.stack.add_named(Gtk.Box(), "blank")
         self.error_page = Adw.StatusPage(icon_name="dialog-error-symbolic")
         self.error_page.set_child(Gtk.Button(label=tr("Ouvrir…"), halign=Gtk.Align.CENTER, action_name="win.open",
                                              css_classes=["pill"]))
@@ -452,6 +455,8 @@ class MainWindow(Adw.ApplicationWindow):
         self._open_gen += 1
         gen = self._open_gen
         self.loading = True
+        if self.document is None and self.stack.get_visible_child_name() == "welcome":
+            self.stack.set_visible_child_name("blank")
         GLib.timeout_add(250, lambda: (self.loading and gen == self._open_gen
                                        and self.stack.set_visible_child_name("loading"), False)[1])
 

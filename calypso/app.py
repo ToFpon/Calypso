@@ -86,8 +86,8 @@ class CalypsoApp(Adw.Application):
                     break
         if target is None:
             target = self.new_window()
+        target.open_document(path, page=page)         # avant present : la fenêtre ne montre pas l'accueil
         target.present()
-        target.open_document(path, page=page)
         return target
 
     def do_activate(self):
