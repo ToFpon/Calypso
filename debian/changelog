@@ -1,3 +1,13 @@
+calypso-pdf (1.0.6~noble1) noble; urgency=medium
+
+  * Compresser et aplatir un filigrane marchent de nouveau dans un
+    dossier dont le nom contient « % » ; un résultat vide ou incomplet
+    est refusé au lieu d'être annoncé réussi.
+  * Un PDF ouvert par un lien symbolique : enregistrer, organiser les
+    pages sur place et Annuler modifient le vrai PDF, le lien reste.
+
+ -- Tof <nourpon@gmail.com>  Mon, 23 Nov 2026 12:23:03 +0000
+
 calypso-pdf (1.0.5~noble1) noble; urgency=medium
 
   * Ouvert depuis Odysseus ou « Ouvrir avec », le document s'affiche

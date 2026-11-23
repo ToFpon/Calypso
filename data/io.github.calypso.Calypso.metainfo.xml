@@ -74,6 +74,14 @@
   </requires>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.0.6" date="2026-11-23">
+      <description>
+        <ul>
+          <li>Compressing and flattening a watermark work again in a folder whose name contains “%”; an empty or incomplete result is refused instead of being reported as a success</li>
+          <li>A PDF opened through a symbolic link: saving, organizing pages in place and Undo change the real PDF and keep the link</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.5" date="2026-11-22">
       <description>
         <ul>
