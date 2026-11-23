@@ -157,6 +157,16 @@ i18n, réglages, fonctionnalités, vrais dialogues, tests, paquet.
   garde les dossiers XDG du premier usage ; lanceur copié avec Exec=true, GIO ignore un Exec introuvable).
   Types : les 4 PDF du lanceur.
 
+## Audit de novembre 2026 (repris de celui d'Odysseus, tests `test_audit` : ils échouent sur l'ancien code)
+
+- Ghostscript : « % » de -sOutputFile est un gabarit de numéro de page → `pdftools._gs_output` (« %% ») ; dossier
+  « TVA 20 % » : la compression échouait (« Unable to open the initial device ») et le filigrane aplati était annoncé
+  réussi avec un PDF vide. Filet `_check_output` (vide ou pages manquantes → « Le PDF produit est vide ou
+  incomplet ») après compression et aplatissement.
+- PDF ouvert par un lien symbolique : organiser sur place, « Annuler » d'un outil (`replace_into`, `_tmp_near`) et
+  Ctrl+S (`Document.save`) remplaçaient le LIEN par un fichier, le vrai PDF restait tel quel → `realpath`.
+- `page_count` : sortie de qpdf en `errors="replace"`.
+
 ## Publication (comme Nausicaa)
 
 Nom du PAQUET, de la COMMANDE et du PROCESSUS : `calypso-pdf` (depuis 1.0.1 ; processus depuis 1.0.4 — le

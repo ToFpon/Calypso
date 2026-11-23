@@ -393,7 +393,10 @@ class _AnnotsMixin:
     def save(self, dst: str):
         """Écrit le document (annotations et champs compris) sous un nom caché du dossier de
         destination, le met sur disque, puis le pose d'un coup (os.replace) : jamais de fichier à
-        moitié écrit, l'ancien reste si ça échoue. Les droits d'un fichier remplacé sont gardés."""
+        moitié écrit, l'ancien reste si ça échoue. Les droits d'un fichier remplacé sont gardés.
+        Lien symbolique : le VRAI fichier est remplacé, le lien reste (avant : remplacé par un fichier)."""
+        if os.path.islink(dst):
+            dst = os.path.realpath(dst)
         folder = os.path.dirname(os.path.abspath(dst)) or "."
         tmp = os.path.join(folder, f".{os.path.basename(dst)}.calypso-{os.getpid()}.tmp")
         try:

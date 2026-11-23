@@ -74,7 +74,26 @@ def suggest_output(path: str, suffix: str) -> str:
     return os.path.join(folder, unique_name(folder, f"{base} ({suffix}).pdf"))
 
 
+def _gs_output(path: str) -> str:
+    """-sOutputFile de Ghostscript : « % » y est un gabarit de numéro de page — un dossier « TVA 20 % »
+    faisait échouer la compression, et l'aplatissement écrivait AILLEURS (code 0, PDF vide annoncé réussi).
+    Repris de l'audit d'Odysseus (novembre 2026)."""
+    return "-sOutputFile=" + path.replace("%", "%%")
+
+
+def _check_output(path: str, pages: int = 0):
+    """Filet : Ghostscript peut répondre 0 sans rien écrire (ou des pages manquantes)."""
+    try:
+        ok = os.path.getsize(path) > 0 and (not pages or page_count(path) == pages)
+    except Exception:  # noqa: BLE001 — PDF illisible
+        ok = False
+    if not ok:
+        raise ToolError(tr("Le PDF produit est vide ou incomplet"))
+
+
 def _tmp_near(dst: str, suffix: str = ".pdf") -> str:
+    if os.path.islink(dst):
+        dst = os.path.realpath(dst)       # sur place à travers un lien : à côté du VRAI fichier (replace_into)
     fd, tmp = tempfile.mkstemp(suffix=suffix, prefix=".calypso-", dir=os.path.dirname(os.path.abspath(dst)))
     os.close(fd)
     return tmp
@@ -130,7 +149,10 @@ def place_new(tmp: str, dst: str) -> str:
 
 
 def replace_into(tmp: str, dst: str):
-    """Remplacement voulu (« Remplacer le document ») : droits gardés, mise sur disque, d'un coup."""
+    """Remplacement voulu (« Remplacer le document ») : droits gardés, mise sur disque, d'un coup. Lien
+    symbolique : le VRAI fichier est remplacé, le lien reste (avant : le lien devenait un fichier)."""
+    if os.path.islink(dst):
+        dst = os.path.realpath(dst)
     _mode_like(tmp, dst)
     _sync(tmp)
     os.replace(tmp, dst)
@@ -201,7 +223,7 @@ def _run(job: Job, argv: list, label: str = "", total_pages: int = 0, base=(0.0,
 def page_count(path: str, password: str = "") -> int:
     if qpdf():
         argv = [qpdf()] + ([f"--password={password}"] if password else []) + ["--show-npages", path]
-        r = subprocess.run(argv, capture_output=True, text=True)
+        r = subprocess.run(argv, capture_output=True, text=True, errors="replace")
         if r.returncode in (0, 3) and r.stdout.strip().isdigit():
             return int(r.stdout.strip())
     from .document import Document
@@ -322,11 +344,12 @@ def compress(job: Job, src: str, dst: str, level: str = "/ebook", grayscale: boo
         with plain(job, src, password) as path:
             argv = [exe, "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.5", f"-dPDFSETTINGS={level}",
                     "-dNOPAUSE", "-dBATCH", "-dDetectDuplicateImages=true", "-dCompressFonts=true",
-                    f"-sOutputFile={tmp}"]
+                    _gs_output(tmp)]
             if grayscale:
                 argv += ["-sColorConversionStrategy=Gray", "-dProcessColorModel=/DeviceGray"]
             argv.append(path)
             _run(job, argv, os.path.basename(src), n)
+        _check_output(tmp, n)
         after = os.path.getsize(tmp)
         if after >= before and not grayscale:
             # plus gros (ou pareil) : le document était déjà optimisé, on ne produit rien
@@ -506,7 +529,8 @@ def watermark(job: Job, src: str, dst: str, o: WatermarkOptions, password: str =
             if not exe:
                 raise ToolError(tr("L'aplatissement demande Ghostscript (sudo apt install ghostscript)"))
             _run(job, [exe, "-sDEVICE=pdfimage24", f"-r{int(o.dpi)}", "-sCompression=JPEG", "-dJPEGQ=90",
-                       "-dNOPAUSE", "-dBATCH", f"-sOutputFile={flat}", tmp], tr("Aplatissement"), n, (0.5, 0.5))
+                       "-dNOPAUSE", "-dBATCH", _gs_output(flat), tmp], tr("Aplatissement"), n, (0.5, 0.5))
+            _check_output(flat, n)
             return place_new(flat, dst)
         return place_new(tmp, dst)
     finally:
